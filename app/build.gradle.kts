@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.lumora.flashlight"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.lumora.flashlight"

@@ -10,7 +10,7 @@ A premium dark Android flashlight with a custom launcher icon, branded splash sc
 - Pushing a `v*` tag automatically creates a GitHub Release with an installable debug APK.
 
 ## Requirements
-- Android Studio with Android SDK Platform 36
+- Android Studio with Android SDK Platform 37
 - JDK 17
 - Gradle 9.6.0 (the GitHub workflow provisions it automatically)
 
@@ -72,3 +72,7 @@ git push origin v1.1.0
 ```
 
 The workflow creates a GitHub Release when the tagged build succeeds.
+
+
+## Build fix (1.1.1)
+The CI build now compiles against Android API 37 because AndroidX Core KTX 1.19.1 requires compileSdk 37 or newer. The workflow installs Android SDK Platform 37 and Build Tools 37.0.0.
