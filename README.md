@@ -76,3 +76,11 @@ The workflow creates a GitHub Release when the tagged build succeeds.
 
 ## Build fix (1.1.1)
 The CI build now compiles against Android API 37 because AndroidX Core KTX 1.19.1 requires compileSdk 37 or newer. The workflow installs Android SDK Platform 37 and Build Tools 37.0.0.
+
+
+## Build compatibility fix (v1.1.2)
+
+This project uses the stable Android 16 SDK platform (`compileSdk 36`) and
+AndroidX Core KTX `1.17.0`. The CI workflow installs `platforms;android-36`
+and `build-tools;36.0.0`. It intentionally does not request the Android SDK
+Preview platform 37, which may not be available on standard GitHub runners.
