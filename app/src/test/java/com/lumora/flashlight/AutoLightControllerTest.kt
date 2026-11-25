@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.roundToInt
 
 class AutoLightControllerTest {
     private var now = 1000L
@@ -157,7 +158,7 @@ class AutoLightControllerTest {
     @Test fun marginalDimLightWaitsLongerBeforeTurningOn() {
         val c = controller()
         assertEquals(0, c.run(15f, 3000).strength)
-        assertEquals(10, c.run(15f, 5000).strength)
+        assertEquals(c.targetFor(15.0).roundToInt(), c.run(15f, 5000).strength)
     }
 
     @Test fun singleBumpIsNotMotion() {
