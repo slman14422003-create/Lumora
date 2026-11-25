@@ -85,7 +85,7 @@
     <string name="camera_sensing">Camera light sensing (optional)</string>
     <string name="cd_camera_sensing">Camera light sensing</string>
     <string name="camera_privacy">Camera frames are measured in memory on your phone and are never saved or sent anywhere.</string>
-    <string name="reset_learning">Reset learned adjustments</string>
+    <string name="reset_learning">Reset learning and calibration</string>
     <string name="screen_fallback">Use the screen as a light when there is no flash</string>
     <string name="language_title">Language</string>
     <string name="language_system">System</string>
@@ -101,11 +101,14 @@
     <string name="screen_light_white">Screen light. Tap to close.</string>
 
     <!-- Messages -->
-    <string name="toast_calibrated">Calibration saved.</string>
-    <string name="toast_calibration_failed">Couldn\'t calibrate. Use Auto mode, wait for a reading, and keep dark and bright levels far apart.</string>
+    <string name="toast_calibrated_dark">Dark level saved: %1$d lux.</string>
+    <string name="toast_calibrated_bright">Bright level saved: %1$d lux.</string>
+    <string name="toast_calibration_not_running">Switch to Auto mode first, then calibrate.</string>
+    <string name="toast_calibration_no_reading">No light reading yet. Wait a few seconds in Auto mode and try again.</string>
+    <string name="toast_calibration_too_dim">Too dim for the bright level. Calibrate it in a brighter place (at least 30 lux).</string>
     <string name="toast_camera_on">Camera sensing is on.</string>
     <string name="toast_camera_denied">Camera not allowed. Using the light sensor only.</string>
-    <string name="toast_learning_cleared">Learned adjustments cleared.</string>
+    <string name="toast_learning_cleared">Learning and calibration cleared.</string>
     <string name="toast_no_light_sensor">This device has no ambient light sensor.</string>
     <string name="toast_no_flash">No flashlight hardware was detected. You can turn on the screen light fallback in Settings.</string>
     <string name="toast_flash_unavailable">Flash unavailable: %1$s</string>

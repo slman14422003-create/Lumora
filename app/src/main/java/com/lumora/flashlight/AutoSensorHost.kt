@@ -26,6 +26,10 @@ data class Environment(
     val cameraActive: Boolean = false
 )
 
+enum class CalibrationStatus { SAVED, NOT_RUNNING, NO_READING, TOO_DIM }
+
+class CalibrationOutcome(val status: CalibrationStatus, val lux: Float = 0f)
+
 class AutoSensorHost(
     private val context: Context,
     private val prefs: SharedPreferences,
@@ -248,8 +252,9 @@ class AutoSensorHost(
 
     fun resetLearning() {
         controller.learned = Learned()
+        controller.calibration = Calibration()
         manualChoice = null
-        prefs.edit().remove(KEY_LOG).also { editor ->
+        prefs.edit().remove(KEY_DARK).remove(KEY_BRIGHT).remove(KEY_LOG).also { editor ->
             listOf("day", "night").forEach { editor.remove("shift_$it").remove("bias_$it") }
         }.apply()
     }
@@ -306,11 +311,12 @@ class AutoSensorHost(
         publishNow()
     }
 
-    fun calibrate(bright: Boolean): Boolean {
-        if (!sampling) return false
-        val result = controller.calibrate(bright) ?: return false
+    fun calibrate(bright: Boolean): CalibrationOutcome {
+        if (!sampling) return CalibrationOutcome(CalibrationStatus.NOT_RUNNING)
+        val lux = controller.lux() ?: return CalibrationOutcome(CalibrationStatus.NO_READING)
+        val result = controller.calibrate(bright) ?: return CalibrationOutcome(CalibrationStatus.TOO_DIM)
         prefs.edit().putFloat(KEY_DARK, result.darkLux).putFloat(KEY_BRIGHT, result.brightLux).apply()
-        return true
+        return CalibrationOutcome(CalibrationStatus.SAVED, lux)
     }
 
     private fun update() {

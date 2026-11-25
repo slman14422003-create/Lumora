@@ -89,11 +89,24 @@ class AutoLightControllerTest {
         assertTrue(c.run(2f, 25_000).strength > 0)
     }
 
-    @Test fun rejectsCalibrationWithoutEnoughRange() {
+    @Test fun brightCalibrationNeedsAtLeastThirtyLux() {
+        val c = controller()
+        c.run(20f, 3000)
+        assertNull(c.calibrate(bright = true))
+    }
+
+    @Test fun darkCalibrationInLitRoomStaysValid() {
         val c = controller()
         c.run(100f, 3000)
-        c.calibration = Calibration(90f, 400f)
-        assertNull(c.calibrate(bright = true))
+        val result = c.calibrate(bright = false)
+        assertTrue(result != null && result.valid && result.darkLux > 90f)
+    }
+
+    @Test fun brightCalibrationLowersDarkLevelWhenNeeded() {
+        val c = controller()
+        c.run(60f, 3000)
+        val result = c.calibrate(bright = true)
+        assertTrue(result != null && result.valid && result.brightLux > 50f && result.darkLux < 20f)
     }
 
     @Test fun turnsOffWhenLaidFaceDownAndStaysOff() {
@@ -102,5 +115,11 @@ class AutoLightControllerTest {
         c.onAccelerometer(0f, 0f, -9.8f, now)
         assertEquals(0, c.run(2f, 6000).strength)
         assertEquals(0, c.run(2f, 3000).strength)
+    }
+
+    @Test fun turnsOffInOrdinaryIndoorLight() {
+        val c = controller()
+        assertEquals(10, c.run(2f, 5000).strength)
+        assertEquals(0, c.run(120f, 8000).strength)
     }
 }

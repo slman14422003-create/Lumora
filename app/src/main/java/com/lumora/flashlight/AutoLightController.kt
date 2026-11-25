@@ -198,7 +198,15 @@ class AutoLightController(private val sources: Sources) {
 
     fun calibrate(bright: Boolean): Calibration? {
         val lux = currentLux() ?: return null
-        val next = if (bright) calibration.copy(brightLux = lux) else calibration.copy(darkLux = lux)
+        val current = calibration
+        // Moving one end keeps the other end valid, so a calibration can't fail just
+        // because the other level was set under different conditions.
+        val next = if (bright) {
+            val dark = minOf(current.darkLux, lux / 3.2f, lux - 31f).coerceAtLeast(0f)
+            Calibration(dark, lux)
+        } else {
+            Calibration(lux, maxOf(current.brightLux, lux * 3f, lux + 30f))
+        }
         if (!next.valid) return null
         calibration = next
         pending = null
@@ -273,7 +281,7 @@ class AutoLightController(private val sources: Sources) {
         val laidFaceDown = faceDown && faceDownSince != 0L && now - faceDownSince >= FACE_DOWN_MS
         val change = when {
             on && laidFaceDown -> Change.TURN_OFF
-            on && lux >= calibration.brightLux -> Change.TURN_OFF
+            on && lux >= offLux() -> Change.TURN_OFF
             on && target - level >= STRENGTH_HYSTERESIS && !covered -> Change.UP
             on && level - target >= STRENGTH_HYSTERESIS -> Change.DOWN
             !on && lux <= turnOnLux() && !covered && !faceDown && inhibit == null -> Change.TURN_ON
@@ -302,6 +310,10 @@ class AutoLightController(private val sources: Sources) {
         val position = ((ln(lux + 1.0) - low) / (high - low)).coerceIn(0.0, 1.0)
         return (preset.max - position * (preset.max - preset.min) + learned.bias).coerceIn(1.0, 10.0)
     }
+
+    // An ordinary lit room (about 50 lux) already means the flashlight isn't needed.
+    private fun offLux(): Double =
+        minOf(calibration.brightLux.toDouble(), maxOf(INDOOR_OFF_LUX, turnOnLux() * 1.25))
 
     private fun turnOnLux(): Double {
         val low = ln(calibration.darkLux + 1.0)
@@ -335,7 +347,7 @@ class AutoLightController(private val sources: Sources) {
             paused -> Reason.PAUSED
             lux == null -> Reason.STARTING
             pending != null -> Reason.WAITING
-            lux >= calibration.brightLux -> Reason.BRIGHT
+            lux >= offLux() -> Reason.BRIGHT
             lux <= turnOnLux() -> Reason.DARK
             else -> Reason.DIM
         }
@@ -354,6 +366,7 @@ class AutoLightController(private val sources: Sources) {
         const val STILL_MS = 10_000L
         const val PEEK_EVERY_MS = 15_000L
         const val PEEK_MS = 1500L
+        private const val INDOOR_OFF_LUX = 50.0
         private const val WINDOW = 5
         private const val FACE_DOWN_Z = 7f
         private const val FACE_DOWN_MS = 1500L

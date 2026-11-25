@@ -191,9 +191,16 @@ class MainActivity : Activity(), MainScreen.Listener {
     }
 
     override fun onCalibrate(bright: Boolean) {
-        val message = getString(
-            if (auto.calibrate(bright)) R.string.toast_calibrated else R.string.toast_calibration_failed
-        )
+        val outcome = auto.calibrate(bright)
+        val message = when (outcome.status) {
+            CalibrationStatus.SAVED -> getString(
+                if (bright) R.string.toast_calibrated_bright else R.string.toast_calibrated_dark,
+                outcome.lux.roundToInt()
+            )
+            CalibrationStatus.NOT_RUNNING -> getString(R.string.toast_calibration_not_running)
+            CalibrationStatus.NO_READING -> getString(R.string.toast_calibration_no_reading)
+            CalibrationStatus.TOO_DIM -> getString(R.string.toast_calibration_too_dim)
+        }
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
