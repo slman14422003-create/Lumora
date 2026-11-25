@@ -8,7 +8,7 @@ import kotlin.math.sqrt
 
 enum class Preset(val min: Int, val max: Int) { ECO(2, 6), BALANCED(4, 10), MAX(8, 10) }
 
-enum class Sensitivity(val factor: Double) { LOW(.5), NORMAL(1.0), HIGH(2.0) }
+enum class Sensitivity(val factor: Double) { VERY_LOW(.25), LOW(.5), NORMAL(1.0), HIGH(2.0), VERY_HIGH(3.5) }
 
 enum class Reason {
     STARTING, DARK, DIM, BRIGHT, WAITING, COVERED, USER_OVERRIDE, THERMAL, PAUSED, NO_LIGHT_SENSOR,
@@ -90,7 +90,9 @@ class AutoLightController(private val sources: Sources) {
     private var paused = false
     private var peekUntil = 0L
     private var nextPeekAt = 0L
-    private var lastAccel: FloatArray? = null
+    private var gravity: FloatArray? = null
+    private var motionStreak = 0
+    private var realMotionAt = 0L
     private var sensedMotionAt: Long? = null
     private var faceDown = false
     private var faceDownSince = 0L
@@ -117,7 +119,9 @@ class AutoLightController(private val sources: Sources) {
         pending = null
         paused = false
         peekUntil = 0L
-        lastAccel = null
+        gravity = null
+        motionStreak = 0
+        realMotionAt = now
         lastMotionAt = now
         lastLightChangeAt = now
         faceDown = false
@@ -147,23 +151,40 @@ class AutoLightController(private val sources: Sources) {
     }
 
     fun onAccelerometer(x: Float, y: Float, z: Float, now: Long) {
-        faceDown = z < -FACE_DOWN_Z
-        if (!faceDown) faceDownSince = 0L else if (faceDownSince == 0L) faceDownSince = now
-        val previous = lastAccel
-        if (previous == null) {
-            lastAccel = floatArrayOf(x, y, z)
+        val g = gravity
+        if (g == null) {
+            gravity = floatArrayOf(x, y, z)
+            updateFaceDown(z, now)
             return
         }
-        if (magnitude(x - previous[0], y - previous[1], z - previous[2]) > MOTION_ACCEL) {
-            lastAccel = floatArrayOf(x, y, z)
-            sensedMotionAt = now
-            wake(now)
+        val deviation = magnitude(x - g[0], y - g[1], z - g[2])
+        g[0] += GRAVITY_ALPHA * (x - g[0])
+        g[1] += GRAVITY_ALPHA * (y - g[1])
+        g[2] += GRAVITY_ALPHA * (z - g[2])
+        updateFaceDown(g[2], now)
+        if (deviation > MOTION_ACCEL) {
+            motionStreak++
+            if (motionStreak >= MOTION_CONFIRM) {
+                sensedMotionAt = now
+                realMotionAt = now
+                wake(now)
+            }
+        } else {
+            motionStreak = 0
         }
+    }
+
+    private fun updateFaceDown(z: Float, now: Long) {
+        val next = if (faceDown) z < -FACE_DOWN_EXIT_Z else z < -FACE_DOWN_Z
+        if (next == faceDown) return
+        faceDown = next
+        faceDownSince = if (next) now else 0L
     }
 
     fun onGyroscope(x: Float, y: Float, z: Float, now: Long) {
         if (magnitude(x, y, z) > MOTION_GYRO) {
             sensedMotionAt = now
+            realMotionAt = now
             wake(now)
         }
     }
@@ -288,7 +309,7 @@ class AutoLightController(private val sources: Sources) {
             on && lux >= offLux() -> Change.TURN_OFF
             on && target - level >= STRENGTH_HYSTERESIS && !covered -> Change.UP
             on && level - target >= STRENGTH_HYSTERESIS -> Change.DOWN
-            !on && lux <= turnOnLux() && !covered && !faceDown && inhibit == null -> Change.TURN_ON
+            !on && lux <= turnOnLux() && !covered && !faceDown && inhibit == null && !restingInDim(lux, now) -> Change.TURN_ON
             else -> null
         }
         if (change != pending) {
@@ -296,7 +317,7 @@ class AutoLightController(private val sources: Sources) {
             pendingSince = now
             return
         }
-        if (change == null || now - pendingSince < DWELL_MS) return
+        if (change == null || now - pendingSince < dwellFor(change, lux)) return
         when (change) {
             Change.TURN_ON -> {
                 on = true
@@ -307,6 +328,12 @@ class AutoLightController(private val sources: Sources) {
         }
         pending = null
     }
+
+    private fun restingInDim(lux: Double, now: Long) =
+        sources.motion && lux > VERY_DARK_LUX && now - realMotionAt > RESTING_MS
+
+    private fun dwellFor(change: Change, lux: Double) =
+        if (change == Change.TURN_ON && lux > turnOnLux() * MARGINAL_RATIO) DWELL_MS * 2 else DWELL_MS
 
     fun targetFor(lux: Double): Double {
         val low = ln(calibration.darkLux + 1.0)
@@ -373,15 +400,21 @@ class AutoLightController(private val sources: Sources) {
         private const val INDOOR_OFF_LUX = 50.0
         private const val WINDOW = 5
         private const val FACE_DOWN_Z = 7f
+        private const val FACE_DOWN_EXIT_Z = 5.5f
+        private const val GRAVITY_ALPHA = .2f
+        private const val MOTION_CONFIRM = 2
+        private const val VERY_DARK_LUX = 3.0
+        private const val RESTING_MS = 20_000L
+        private const val MARGINAL_RATIO = .35
         private const val FACE_DOWN_MS = 1500L
         private const val MIN_SAMPLES = 3
         private const val SMOOTHING_MS = 800.0
         private const val STRENGTH_HYSTERESIS = .75
-        private const val TURN_ON_POSITION = .4
+        private const val TURN_ON_POSITION = .18
         private const val CHANGE_DELTA = .15
         private const val RESUME_DELTA = .25
-        private const val MOTION_ACCEL = .6f
-        private const val MOTION_GYRO = .2f
+        private const val MOTION_ACCEL = .5f
+        private const val MOTION_GYRO = .35f
         private const val SETTLE_MS = 3000L
         private const val FAST_TICK_MS = 250L
         private const val SLOW_TICK_MS = 750L

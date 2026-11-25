@@ -85,7 +85,7 @@
     <string name="camera_sensing">Camera light sensing (optional)</string>
     <string name="cd_camera_sensing">Camera light sensing</string>
     <string name="camera_privacy">Camera frames are measured in memory on your phone and are never saved or sent anywhere.</string>
-    <string name="reset_learning">Reset learning and calibration</string>
+    <string name="reset_learning">Reset all sensors and calibration</string>
     <string name="screen_fallback">Use the screen as a light when there is no flash</string>
     <string name="status_icon">Status bar icon</string>
     <string name="status_icon_note">Shows a small icon with quick controls in the status bar and lock screen.</string>
@@ -104,6 +104,15 @@
     <string name="language_english">English</string>
     <string name="language_arabic" translatable="false">العربية</string>
     <string name="open_screen_light">Open screen light</string>
+    <string name="sensitivity_very_low">Very low</string>
+    <string name="sensitivity_very_high">Very high</string>
+    <string name="sensitivity_note">Higher turns the light on sooner in dim rooms. Lower waits for real darkness.</string>
+    <string name="group_appearance">Appearance</string>
+    <string name="group_auto">Auto mode</string>
+    <string name="group_background">Status bar and background</string>
+    <string name="group_sensors">Sensors and calibration</string>
+    <string name="group_screen_light">Screen light</string>
+    <string name="toast_sensors_reset">All sensors were reset and detected again. Calibration and learning were cleared.</string>
     <string name="sensitivity_low">Low</string>
     <string name="sensitivity_normal">Normal</string>
     <string name="sensitivity_high">High</string>

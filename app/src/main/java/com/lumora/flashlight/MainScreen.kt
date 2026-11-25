@@ -44,7 +44,8 @@ data class UiState(
     val strengthSupported: Boolean,
     val lightMode: LightMode = LightMode.STEADY,
     val timerMinutes: Int = 0,
-    val timerEndsAt: Long = 0L
+    val timerEndsAt: Long = 0L,
+    val strengthSteps: Int = 10
 )
 
 @SuppressLint("ViewConstructor", "UseSwitchCompatOrMaterialCode")
@@ -176,7 +177,9 @@ class MainScreen(
         buildAutoPanel()
         buildKeepOn(keepOn)
         val reading = button(string(R.string.reading_mode)) { listener.onReadingMode() }
-        page.addView(reading, match().apply { topMargin = dp(12) })
+        reading.background = ripple(rounded(selectedFill, 16, blue), rounded(white, 16))
+        reading.minimumHeight = dp(54)
+        page.addView(reading, match().apply { topMargin = dp(14) })
         applyTheme()
     }
 
@@ -248,6 +251,8 @@ class MainScreen(
         header.addView(icon(R.drawable.ic_sun, accent), size(20, 20))
         sliderTitle.setPaddingRelative(dp(10), 0, 0, 0)
         header.addView(sliderTitle, weighted())
+        strengthValue.background = rounded(selectedFill, 12, blue)
+        strengthValue.setPaddingRelative(dp(12), dp(4), dp(12), dp(4))
         header.addView(strengthValue)
         card.addView(header, match())
         slider.apply {
@@ -265,9 +270,9 @@ class MainScreen(
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(bar: SeekBar?, value: Int, fromUser: Boolean) {
                     if (lastState?.autoMode != true) {
-                        listener.onStrengthChanged(value + 1, fromUser)
+                        listener.onStrengthChanged(strengthFor(value), fromUser)
                     } else if (fromUser) {
-                        sensitivity = Sensitivity.entries[value.coerceIn(0, 2)]
+                        sensitivity = Sensitivity.entries[value.coerceIn(0, Sensitivity.entries.size - 1)]
                         showSliderValue()
                         listener.onSensitivitySelected(sensitivity)
                     }
@@ -392,93 +397,111 @@ class MainScreen(
     private fun showSettings() {
         val dialog = Dialog(activity)
         dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE)
-        val sheet = column().apply { setPaddingRelative(dp(22), dp(20), dp(22), dp(20)) }
+        val sheet = column().apply { setPaddingRelative(dp(18), dp(12), dp(18), dp(20)) }
+        val groups = mutableListOf<LinearLayout>()
         fun paint() {
-            sheet.background = rounded(cardColor, 24, strokeColor)
+            sheet.background = rounded(cardColor, 28, strokeColor)
+            groups.forEach { it.background = rounded(ColorUtils.blendARGB(cardColor, white, .05f), 18, strokeColor) }
         }
-        paint()
-        sheet.addView(text(string(R.string.settings_title), 20f, textColor, true), match())
-        val line = row()
-        line.addView(text(string(R.string.amoled_theme), 15f, textColor), weighted())
-        line.addView(switch(amoled, string(R.string.amoled_theme)) {
+        fun group(title: String): LinearLayout {
+            sheet.addView(label(title), match().apply {
+                topMargin = dp(18)
+                marginStart = dp(4)
+            })
+            val box = column().apply { setPaddingRelative(dp(14), dp(8), dp(14), dp(12)) }
+            groups.add(box)
+            sheet.addView(box, match().apply { topMargin = dp(8) })
+            return box
+        }
+        fun toggle(parent: LinearLayout, title: String, note: String?, checked: Boolean, onChange: (Boolean) -> Unit): Switch {
+            val line = row()
+            line.addView(text(title, 15f, textColor), weighted())
+            val control = switch(checked, title, onChange)
+            line.addView(control)
+            parent.addView(line, match())
+            if (note != null) parent.addView(text(note, 12f, muted), match().apply { bottomMargin = dp(4) })
+            return control
+        }
+        val handle = View(activity).apply { background = rounded(strokeColor, 3) }
+        sheet.addView(handle, size(40, 5))
+        sheet.addView(
+            text(string(R.string.settings_title), 22f, textColor, true),
+            match().apply { topMargin = dp(14) }
+        )
+
+        val appearance = group(string(R.string.group_appearance))
+        toggle(appearance, string(R.string.amoled_theme), null, amoled) {
             amoled = it
             applyTheme()
             paint()
             listener.onAmoledChanged(it)
-        })
-        sheet.addView(line, match().apply { topMargin = dp(14) })
-        addChoices(
-            sheet, string(R.string.auto_preset), Preset.entries.toList(), { presetLabel(it) }, { preset }, 16
-        ) {
-            preset = it
-            listener.onPresetSelected(it)
         }
         addChoices(
-            sheet, string(R.string.language_title), listOf("", "en", "ar"),
+            appearance, string(R.string.language_title), listOf("", "en", "ar"),
             {
                 when (it) {
                     "en" -> string(R.string.language_english)
                     "ar" -> string(R.string.language_arabic)
                     else -> string(R.string.language_system)
                 }
-            }, { language }, 16
+            }, { language }, 10
         ) {
             language = it
             listener.onLanguageSelected(it)
         }
-        val iconLine = row()
-        iconLine.addView(text(string(R.string.status_icon), 15f, textColor), weighted())
-        val iconSwitch = switch(statusIcon, string(R.string.status_icon)) {
+
+        val autoGroup = group(string(R.string.group_auto))
+        addChoices(
+            autoGroup, string(R.string.auto_preset), Preset.entries.toList(), { presetLabel(it) }, { preset }, 4
+        ) {
+            preset = it
+            listener.onPresetSelected(it)
+        }
+
+        val background = group(string(R.string.group_background))
+        statusIconSwitch = toggle(
+            background, string(R.string.status_icon), string(R.string.status_icon_note), statusIcon
+        ) {
             if (it != statusIcon) {
                 statusIcon = it
                 listener.onStatusIconChanged(it)
             }
         }
-        statusIconSwitch = iconSwitch
-        iconLine.addView(iconSwitch)
-        sheet.addView(iconLine, match().apply { topMargin = dp(14) })
-        sheet.addView(text(string(R.string.status_icon_note), 13f, muted), match())
-        val backgroundLine = row()
-        backgroundLine.addView(text(string(R.string.bg_auto), 15f, textColor), weighted())
-        val backgroundSwitch = switch(backgroundAuto, string(R.string.bg_auto)) {
+        backgroundAutoSwitch = toggle(
+            background, string(R.string.bg_auto), string(R.string.bg_auto_note), backgroundAuto
+        ) {
             if (it != backgroundAuto) {
                 backgroundAuto = it
                 listener.onBackgroundAutoChanged(it)
             }
         }
-        backgroundAutoSwitch = backgroundSwitch
-        backgroundLine.addView(backgroundSwitch)
-        sheet.addView(backgroundLine, match().apply { topMargin = dp(10) })
-        sheet.addView(text(string(R.string.bg_auto_note), 13f, muted), match())
-        sheet.addView(
-            text(string(R.string.calibration_title), 15f, muted),
-            match().apply { topMargin = dp(16) }
-        )
+
+        val sensors = group(string(R.string.group_sensors))
+        sensors.addView(text(string(R.string.calibration_title), 13f, muted, true), match())
         val calibration = row()
-        calibration.addView(button(string(R.string.calibrate_dark)) { listener.onCalibrate(false) }, weighted())
+        calibration.addView(
+            button(string(R.string.calibrate_dark)) { listener.onCalibrate(false) },
+            weighted().apply { marginEnd = dp(8) }
+        )
         calibration.addView(button(string(R.string.calibrate_bright)) { listener.onCalibrate(true) }, weighted())
-        sheet.addView(calibration, match())
-        val cameraLine = row()
-        cameraLine.addView(text(string(R.string.camera_sensing), 15f, textColor), weighted())
-        val toggle = switch(cameraEnabled, string(R.string.cd_camera_sensing)) {
+        sensors.addView(calibration, match().apply { topMargin = dp(6) })
+        cameraSwitch = toggle(
+            sensors, string(R.string.camera_sensing), string(R.string.camera_privacy), cameraEnabled
+        ) {
             if (it != cameraEnabled) listener.onCameraToggled(it)
         }
-        cameraSwitch = toggle
-        cameraLine.addView(toggle)
-        sheet.addView(cameraLine, match().apply { topMargin = dp(14) })
-        sheet.addView(text(string(R.string.camera_privacy), 13f, muted), match())
-        val fallbackLine = row()
-        fallbackLine.addView(text(string(R.string.screen_fallback), 15f, textColor), weighted())
-        fallbackLine.addView(switch(screenFallback, string(R.string.screen_fallback)) {
+        val reset = button(string(R.string.reset_learning)) { listener.onResetLearning() }
+        reset.setTextColor(warm)
+        reset.background = ripple(rounded(transparent, 12, warm), rounded(white, 12))
+        sensors.addView(reset, match().apply { topMargin = dp(10) })
+
+        val screenLight = group(string(R.string.group_screen_light))
+        toggle(screenLight, string(R.string.screen_fallback), null, screenFallback) {
             screenFallback = it
             listener.onScreenFallbackChanged(it)
-        })
-        sheet.addView(fallbackLine, match().apply { topMargin = dp(14) })
-        sheet.addView(button(string(R.string.open_screen_light)) {
-            dialog.dismiss()
-            listener.onOpenScreenLight()
-        }, match())
-        sheet.addView(button(string(R.string.reset_learning)) { listener.onResetLearning() }, match())
+        }
+        addScreenLightButton(screenLight, dialog)
+        paint()
         dialog.setOnDismissListener {
             cameraSwitch = null
             statusIconSwitch = null
@@ -493,6 +516,13 @@ class MainScreen(
         }
     }
 
+    private fun addScreenLightButton(parent: LinearLayout, dialog: Dialog) {
+        parent.addView(button(string(R.string.open_screen_light)) {
+            dialog.dismiss()
+            listener.onOpenScreenLight()
+        }, match().apply { topMargin = dp(8) })
+    }
+
     private fun presetLabel(preset: Preset) = string(
         when (preset) {
             Preset.ECO -> R.string.preset_eco
@@ -503,9 +533,11 @@ class MainScreen(
 
     private fun sensitivityLabel(sensitivity: Sensitivity) = string(
         when (sensitivity) {
+            Sensitivity.VERY_LOW -> R.string.sensitivity_very_low
             Sensitivity.LOW -> R.string.sensitivity_low
             Sensitivity.NORMAL -> R.string.sensitivity_normal
             Sensitivity.HIGH -> R.string.sensitivity_high
+            Sensitivity.VERY_HIGH -> R.string.sensitivity_very_high
         }
     )
 
@@ -519,7 +551,7 @@ class MainScreen(
         topMargin: Int,
         onPick: (T) -> Unit
     ): () -> Unit {
-        parent.addView(text(title, 15f, muted), match().apply { this.topMargin = dp(topMargin) })
+        parent.addView(text(title, 13f, muted, true), match().apply { this.topMargin = dp(topMargin) })
         val line = row()
         val buttons = mutableListOf<Button>()
         fun paint() {
@@ -583,7 +615,7 @@ class MainScreen(
             @Suppress("DEPRECATION")
             activity.window.navigationBarColor = bgColor
         }
-        cards.forEach { it.background = rounded(cardColor, 18, strokeColor) }
+        cards.forEach { it.background = surface(20) }
         lastState?.let { paintPower(it.torchOn) }
     }
 
@@ -669,8 +701,9 @@ class MainScreen(
 
     private fun showSlider(state: UiState, animate: Boolean) {
         val auto = state.autoMode
-        val max = if (auto) 2 else 9
-        val progress = if (auto) sensitivity.ordinal else state.strength - 1
+        val steps = state.strengthSteps.coerceIn(2, 10)
+        val max = if (auto) Sensitivity.entries.size - 1 else steps - 1
+        val progress = if (auto) sensitivity.ordinal else progressFor(state.strength, steps)
         if (slider.max != max) slider.max = max
         if (slider.progress != progress) slider.progress = progress
         slider.isEnabled = auto || state.strengthSupported
@@ -678,7 +711,17 @@ class MainScreen(
         slider.contentDescription = title
         sliderTitle.text = title
         showSliderValue()
-        strengthNote.visibility = if (auto || state.strengthSupported) View.GONE else View.VISIBLE
+        when {
+            auto -> {
+                strengthNote.text = string(R.string.sensitivity_note)
+                strengthNote.visibility = View.VISIBLE
+            }
+            !state.strengthSupported -> {
+                strengthNote.text = string(R.string.strength_unsupported_note)
+                strengthNote.visibility = View.VISIBLE
+            }
+            else -> strengthNote.visibility = View.GONE
+        }
         val alpha = if (slider.isEnabled) 1f else .35f
         if (animate) {
             listOf(sliderTitle, strengthValue, slider).forEach {
@@ -691,13 +734,21 @@ class MainScreen(
         }
     }
 
+    private fun strengthFor(progress: Int): Int {
+        val steps = (lastState?.strengthSteps ?: 10).coerceIn(2, 10)
+        return (1 + progress * 9f / (steps - 1)).roundToInt().coerceIn(1, 10)
+    }
+
+    private fun progressFor(strength: Int, steps: Int) =
+        (((strength.coerceIn(1, 10) - 1) * (steps - 1)) / 9f).roundToInt().coerceIn(0, steps - 1)
+
     private fun showSliderValue() {
         val state = lastState ?: return
         strengthValue.text = when {
             state.autoMode -> sensitivityLabel(sensitivity)
             !state.strengthSupported -> string(R.string.strength_on_off)
             state.strength == 10 -> string(R.string.strength_max)
-            else -> string(R.string.strength_fraction, state.strength)
+            else -> string(R.string.result_percent, state.strength * 10)
         }
         val title = string(if (state.autoMode) R.string.sensitivity else R.string.brightness)
         strengthValue.contentDescription = string(R.string.value_description, title, strengthValue.text)
@@ -850,6 +901,16 @@ class MainScreen(
 
     private fun ripple(content: Drawable?, mask: Drawable) =
         RippleDrawable(ColorStateList.valueOf(ColorUtils.setAlphaComponent(accent, 70)), content, mask)
+
+    private fun surface(radius: Int) = GradientDrawable(
+        GradientDrawable.Orientation.TOP_BOTTOM,
+        intArrayOf(ColorUtils.blendARGB(cardColor, white, .035f), cardColor)
+    ).apply {
+        cornerRadius = dp(radius).toFloat()
+        setStroke(dp(1), strokeColor)
+    }
+
+    private fun label(value: String) = text(value, 12f, muted, true).apply { letterSpacing = .08f }
 
     private fun oval(color: Int) = GradientDrawable().apply {
         shape = GradientDrawable.OVAL

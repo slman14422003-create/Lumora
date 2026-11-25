@@ -146,4 +146,40 @@ class AutoLightControllerTest {
         c.lightFailed = true
         assertEquals(Reason.NO_LIGHT_SENSOR, c.output(now).reason)
     }
+
+    @Test fun doesNotTurnOnWhenRestingInDimLight() {
+        val c = controller(motion = true)
+        c.run(500f, 25_000)
+        assertEquals(0, c.run(8f, 10_000).strength)
+        assertTrue(c.run(1f, 25_000).strength > 0)
+    }
+
+    @Test fun marginalDimLightWaitsLongerBeforeTurningOn() {
+        val c = controller()
+        assertEquals(0, c.run(15f, 3000).strength)
+        assertEquals(10, c.run(15f, 5000).strength)
+    }
+
+    @Test fun singleBumpIsNotMotion() {
+        val c = controller(motion = true)
+        c.onAccelerometer(0f, 0f, 9.8f, now)
+        c.onAccelerometer(2f, 0f, 9.8f, now + 200)
+        c.onAccelerometer(0f, 0f, 9.8f, now + 400)
+        assertFalse(c.isMoving(now + 400))
+    }
+
+    @Test fun sustainedShakeIsMotion() {
+        val c = controller(motion = true)
+        c.onAccelerometer(0f, 0f, 9.8f, now)
+        c.onAccelerometer(2f, 0f, 9.8f, now + 200)
+        c.onAccelerometer(2f, 0f, 9.8f, now + 400)
+        assertTrue(c.isMoving(now + 400))
+    }
+
+    @Test fun tiltedFaceDownStillTurnsOff() {
+        val c = controller()
+        assertEquals(10, c.run(2f, 5000).strength)
+        c.onAccelerometer(2.5f, 0f, -9.4f, now)
+        assertEquals(0, c.run(2f, 6000).strength)
+    }
 }

@@ -295,8 +295,8 @@ class MainActivity : Activity(), MainScreen.Listener {
     }
 
     override fun onResetLearning() {
-        auto.resetLearning()
-        Toast.makeText(this, R.string.toast_learning_cleared, Toast.LENGTH_SHORT).show()
+        auto.resetSensors()
+        Toast.makeText(this, R.string.toast_sensors_reset, Toast.LENGTH_LONG).show()
     }
 
     override fun onReadingMode() {
@@ -421,8 +421,7 @@ class MainActivity : Activity(), MainScreen.Listener {
             cameraManager.setTorchMode(id, false)
             lastStrength = -1
         } else if (strengthSupported && Build.VERSION.SDK_INT >= 33) {
-            val level = (((minOf(strength, closeCap) / 10f) * (maxStrengthLevel - 1)).roundToInt() + 1)
-                .coerceIn(1, maxStrengthLevel)
+            val level = TorchSupport.deviceLevel(minOf(strength, closeCap), maxStrengthLevel)
             if (lastStrength != level) {
                 cameraManager.turnOnTorchWithStrengthLevel(id, level)
                 lastStrength = level
@@ -529,7 +528,10 @@ class MainActivity : Activity(), MainScreen.Listener {
         syncTimer()
         val endsAt = if (torchOn && !autoMode) AutoOffTimer.endsAt(this) else 0L
         screen.render(
-            UiState(torchOn, autoMode, strength, strengthSupported, lightMode, timerMinutes, endsAt)
+            UiState(
+                torchOn, autoMode, strength, strengthSupported, lightMode, timerMinutes, endsAt,
+                if (strengthSupported) maxStrengthLevel.coerceIn(2, 10) else 10
+            )
         )
     }
 

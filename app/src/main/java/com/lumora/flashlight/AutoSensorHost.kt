@@ -282,6 +282,28 @@ class AutoSensorHost(
         }.apply()
     }
 
+    fun resetSensors() {
+        cancelCalibration()
+        resetLearning()
+        lightEventAt = 0L
+        lightUsable = true
+        cameraBlockedForSession = false
+        cameraLux = null
+        warmth = Warmth.UNKNOWN
+        flicker = Flicker.UNKNOWN
+        controller.flickering = false
+        controller.inhibit = null
+        analyzer.reset()
+        burstTimes.clear()
+        burstValues.clear()
+        environment = Environment()
+        if (sampling) {
+            stopSensors()
+            startSensors()
+        }
+        updateCamera()
+    }
+
     private fun hour() = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
 
     private fun period() = if (hour() in 7..18) "day" else "night"

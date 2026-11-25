@@ -76,7 +76,7 @@
     <string name="camera_sensing">استشعار الضوء بالكاميرا (اختياري)</string>
     <string name="cd_camera_sensing">استشعار الضوء بالكاميرا</string>
     <string name="camera_privacy">تُقاس إطارات الكاميرا في ذاكرة هاتفك ولا تُحفظ ولا تُرسل إلى أي جهة.</string>
-    <string name="reset_learning">إعادة ضبط التعلّم والمعايرة</string>
+    <string name="reset_learning">إعادة ضبط كل الحساسات والمعايرة</string>
     <string name="screen_fallback">استخدام الشاشة كضوء عند عدم وجود فلاش</string>
     <string name="status_icon">أيقونة شريط الحالة</string>
     <string name="status_icon_note">تُظهر أيقونة صغيرة بأزرار سريعة في شريط الحالة وشاشة القفل.</string>
@@ -94,6 +94,15 @@
     <string name="language_system">النظام</string>
     <string name="language_english">English</string>
     <string name="open_screen_light">فتح ضوء الشاشة</string>
+    <string name="sensitivity_very_low">منخفضة جداً</string>
+    <string name="sensitivity_very_high">عالية جداً</string>
+    <string name="sensitivity_note">الأعلى يشغّل الضوء أبكر في الغرف الخافتة. الأدنى ينتظر ظلاماً حقيقياً.</string>
+    <string name="group_appearance">المظهر</string>
+    <string name="group_auto">الوضع التلقائي</string>
+    <string name="group_background">شريط الحالة والخلفية</string>
+    <string name="group_sensors">الحساسات والمعايرة</string>
+    <string name="group_screen_light">ضوء الشاشة</string>
+    <string name="toast_sensors_reset">أُعيد ضبط كل الحساسات واكتشافها من جديد. مُسحت المعايرة والتعلّم.</string>
     <string name="sensitivity_low">منخفضة</string>
     <string name="sensitivity_normal">عادية</string>
     <string name="sensitivity_high">عالية</string>

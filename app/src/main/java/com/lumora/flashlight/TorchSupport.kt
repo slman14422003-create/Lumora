@@ -25,6 +25,9 @@ object TorchSupport {
         } catch (_: Exception) { }
     }
 
+    fun deviceLevel(strength: Int, maxLevel: Int): Int =
+        ((((strength.coerceIn(1, 10) - 1) / 9f) * (maxLevel - 1)).roundToInt() + 1).coerceIn(1, maxLevel)
+
     fun hasFrontCamera(manager: CameraManager): Boolean = try {
         manager.cameraIdList.any {
             try {
@@ -64,8 +67,7 @@ class TorchOutput(private val manager: CameraManager) {
             manager.setTorchMode(camera, false)
             lastLevel = -1
         } else if (maxLevel > 1 && Build.VERSION.SDK_INT >= 33) {
-            val level = ((strength.coerceIn(1, 10) / 10f * (maxLevel - 1)).roundToInt() + 1)
-                .coerceIn(1, maxLevel)
+            val level = TorchSupport.deviceLevel(strength, maxLevel)
             if (level != lastLevel) {
                 manager.turnOnTorchWithStrengthLevel(camera, level)
                 lastLevel = level
