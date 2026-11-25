@@ -72,6 +72,7 @@ class MainScreen(
         fun onTimerSelected(minutes: Int)
         fun onScreenFallbackChanged(checked: Boolean)
         fun onOpenScreenLight()
+        fun onLanguageSelected(code: String)
     }
 
     private fun color(@ColorRes id: Int) = activity.getColor(id)
@@ -98,6 +99,7 @@ class MainScreen(
 
     private val cards = mutableListOf<View>()
     private var lastState: UiState? = null
+    var language = ""
     var preset = Preset.BALANCED
     var sensitivity = Sensitivity.NORMAL
     var cameraEnabled = false
@@ -396,6 +398,19 @@ class MainScreen(
         ) {
             preset = it
             listener.onPresetSelected(it)
+        }
+        addChoices(
+            sheet, string(R.string.language_title), listOf("", "en", "ar"),
+            {
+                when (it) {
+                    "en" -> string(R.string.language_english)
+                    "ar" -> string(R.string.language_arabic)
+                    else -> string(R.string.language_system)
+                }
+            }, { language }, 16
+        ) {
+            language = it
+            listener.onLanguageSelected(it)
         }
         sheet.addView(
             text(string(R.string.calibration_title), 15f, muted),

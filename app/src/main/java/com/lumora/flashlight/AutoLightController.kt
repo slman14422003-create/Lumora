@@ -12,7 +12,7 @@ enum class Sensitivity(val factor: Double) { LOW(.5), NORMAL(1.0), HIGH(2.0) }
 
 enum class Reason {
     STARTING, DARK, DIM, BRIGHT, WAITING, COVERED, USER_OVERRIDE, THERMAL, PAUSED, NO_LIGHT_SENSOR,
-    SUNLIGHT, BLOCKED, CLOSE
+    SUNLIGHT, BLOCKED, CLOSE, FACE_DOWN
 }
 
 data class Sources(
@@ -56,6 +56,7 @@ fun reasonLine(text: TextSource, reason: Reason, strength: Int, dimmable: Boolea
         Reason.SUNLIGHT -> text.get(R.string.reason_sunlight)
         Reason.BLOCKED -> text.get(R.string.reason_blocked)
         Reason.CLOSE -> text.get(R.string.reason_close, result)
+        Reason.FACE_DOWN -> text.get(R.string.reason_face_down, result)
     }
 }
 
@@ -90,6 +91,8 @@ class AutoLightController(private val sources: Sources) {
     private var nextPeekAt = 0L
     private var lastAccel: FloatArray? = null
     private var sensedMotionAt: Long? = null
+    private var faceDown = false
+    private var faceDownSince = 0L
 
     val isCovered get() = covered
 
@@ -116,6 +119,8 @@ class AutoLightController(private val sources: Sources) {
         lastAccel = null
         lastMotionAt = now
         lastLightChangeAt = now
+        faceDown = false
+        faceDownSince = 0L
     }
 
     private fun resetFilter() {
@@ -141,6 +146,8 @@ class AutoLightController(private val sources: Sources) {
     }
 
     fun onAccelerometer(x: Float, y: Float, z: Float, now: Long) {
+        faceDown = z < -FACE_DOWN_Z
+        if (!faceDown) faceDownSince = 0L else if (faceDownSince == 0L) faceDownSince = now
         val previous = lastAccel
         if (previous == null) {
             lastAccel = floatArrayOf(x, y, z)
@@ -263,11 +270,13 @@ class AutoLightController(private val sources: Sources) {
         }
         val lux = effectiveLux() ?: return
         val target = targetFor(lux)
+        val laidFaceDown = faceDown && faceDownSince != 0L && now - faceDownSince >= FACE_DOWN_MS
         val change = when {
+            on && laidFaceDown -> Change.TURN_OFF
             on && lux >= calibration.brightLux -> Change.TURN_OFF
             on && target - level >= STRENGTH_HYSTERESIS && !covered -> Change.UP
             on && level - target >= STRENGTH_HYSTERESIS -> Change.DOWN
-            !on && lux <= turnOnLux() && !covered && inhibit == null -> Change.TURN_ON
+            !on && lux <= turnOnLux() && !covered && !faceDown && inhibit == null -> Change.TURN_ON
             else -> null
         }
         if (change != pending) {
@@ -319,6 +328,7 @@ class AutoLightController(private val sources: Sources) {
             !sources.light && !cameraFallback -> Reason.NO_LIGHT_SENSOR
             on && cap < level -> Reason.THERMAL
             now < overrideUntil -> Reason.USER_OVERRIDE
+            faceDown && now - faceDownSince >= FACE_DOWN_MS -> Reason.FACE_DOWN
             covered -> Reason.COVERED
             !on && inhibit != null -> inhibit ?: Reason.BRIGHT
             on && closeCap < level -> Reason.CLOSE
@@ -345,6 +355,8 @@ class AutoLightController(private val sources: Sources) {
         const val PEEK_EVERY_MS = 15_000L
         const val PEEK_MS = 1500L
         private const val WINDOW = 5
+        private const val FACE_DOWN_Z = 7f
+        private const val FACE_DOWN_MS = 1500L
         private const val MIN_SAMPLES = 3
         private const val SMOOTHING_MS = 800.0
         private const val STRENGTH_HYSTERESIS = .75

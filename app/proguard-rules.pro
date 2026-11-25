@@ -1,1 +1,4 @@
-# Keep Android framework entry points and reflection-free app code shrinkable.
+-keep class com.lumora.flashlight.TorchTileService { *; }
+-keep class com.lumora.flashlight.AutoOffReceiver { *; }
+-keep class com.lumora.flashlight.MainActivity { *; }
+-keepclassmembers enum com.lumora.flashlight.** { *; }

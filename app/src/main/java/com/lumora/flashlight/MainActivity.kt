@@ -3,6 +3,8 @@ package com.lumora.flashlight
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
+import java.util.Locale
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraCharacteristics
@@ -51,6 +53,20 @@ class MainActivity : Activity(), MainScreen.Listener {
     private var ignoreTorchUntil = 0L
     private val patternTick = Runnable { stepPattern() }
 
+    override fun attachBaseContext(base: Context) {
+        val code = base.getSharedPreferences(Prefs.FILE, MODE_PRIVATE)
+            .getString(Prefs.LANGUAGE, "").orEmpty()
+        if (code.isEmpty()) {
+            super.attachBaseContext(base)
+            return
+        }
+        val locale = Locale(code)
+        Locale.setDefault(locale)
+        val config = Configuration(base.resources.configuration)
+        config.setLocale(locale)
+        super.attachBaseContext(base.createConfigurationContext(config))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setOnExitAnimationListener { splash ->
             splash.iconView.animate().scaleX(1.25f).scaleY(1.25f)
@@ -74,6 +90,7 @@ class MainActivity : Activity(), MainScreen.Listener {
         screen = MainScreen(
             this, prefs.getBoolean(Prefs.AMOLED, false), keepOnInBackground, screenFallback, this
         )
+        screen.language = prefs.getString(Prefs.LANGUAGE, "").orEmpty()
         screen.preset = auto.preset
         screen.sensitivity = auto.sensitivity
         screen.cameraEnabled = auto.cameraEnabled
@@ -243,6 +260,12 @@ class MainActivity : Activity(), MainScreen.Listener {
     override fun onScreenFallbackChanged(checked: Boolean) {
         screenFallback = checked
         prefs.edit().putBoolean(Prefs.SCREEN_FALLBACK, checked).apply()
+    }
+
+    override fun onLanguageSelected(code: String) {
+        if (code == prefs.getString(Prefs.LANGUAGE, "").orEmpty()) return
+        prefs.edit().putString(Prefs.LANGUAGE, code).apply()
+        recreate()
     }
 
     override fun onOpenScreenLight() {

@@ -95,4 +95,12 @@ class AutoLightControllerTest {
         c.calibration = Calibration(90f, 400f)
         assertNull(c.calibrate(bright = true))
     }
+
+    @Test fun turnsOffWhenLaidFaceDownAndStaysOff() {
+        val c = controller()
+        assertEquals(10, c.run(2f, 5000).strength)
+        c.onAccelerometer(0f, 0f, -9.8f, now)
+        assertEquals(0, c.run(2f, 6000).strength)
+        assertEquals(0, c.run(2f, 3000).strength)
+    }
 }

@@ -20,6 +20,8 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
+            // Signed with the debug key so the CI release APK installs; use your own keystore for the Play Store.
+            signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

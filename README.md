@@ -1,6 +1,6 @@
 # LUMORA ✦ Smart Flashlight
 
-A premium dark Android flashlight with a custom launcher icon, branded splash screen, manual brightness control on compatible hardware, and ambient-light AUTO mode.
+A premium dark Android flashlight with a custom launcher icon, branded splash screen, manual brightness control on compatible hardware, and ambient-light AUTO mode (turns off when laid face down).
 
 ## What's new in 1.2.0
 - SOS and strobe light modes (run while the app is open; a photosensitivity warning is shown).

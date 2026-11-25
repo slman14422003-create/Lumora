@@ -87,6 +87,10 @@
     <string name="camera_privacy">Camera frames are measured in memory on your phone and are never saved or sent anywhere.</string>
     <string name="reset_learning">Reset learned adjustments</string>
     <string name="screen_fallback">Use the screen as a light when there is no flash</string>
+    <string name="language_title">Language</string>
+    <string name="language_system">System</string>
+    <string name="language_english">English</string>
+    <string name="language_arabic" translatable="false">العربية</string>
     <string name="open_screen_light">Open screen light</string>
     <string name="sensitivity_low">Low</string>
     <string name="sensitivity_normal">Normal</string>
@@ -153,5 +157,6 @@
     <string name="reason_no_sensor">No light sensor → Auto unavailable</string>
     <string name="reason_sunlight">Daylight → staying off</string>
     <string name="reason_blocked">Sensor blocked → staying off</string>
+    <string name="reason_face_down">Face down → %1$s</string>
     <string name="reason_close">Close subject → %1$s</string>
 </resources>

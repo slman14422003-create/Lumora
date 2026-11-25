@@ -6,5 +6,6 @@ object Prefs {
     const val AMOLED = "amoled_theme"
     const val TIMER_MINUTES = "auto_off_minutes"
     const val TIMER_ENDS_AT = "auto_off_ends_at"
+    const val LANGUAGE = "app_language"
     const val SCREEN_FALLBACK = "screen_light_fallback"
 }

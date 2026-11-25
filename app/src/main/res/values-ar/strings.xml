@@ -78,6 +78,9 @@
     <string name="camera_privacy">تُقاس إطارات الكاميرا في ذاكرة هاتفك ولا تُحفظ ولا تُرسل إلى أي جهة.</string>
     <string name="reset_learning">إعادة ضبط التعديلات المتعلمة</string>
     <string name="screen_fallback">استخدام الشاشة كضوء عند عدم وجود فلاش</string>
+    <string name="language_title">اللغة</string>
+    <string name="language_system">النظام</string>
+    <string name="language_english">English</string>
     <string name="open_screen_light">فتح ضوء الشاشة</string>
     <string name="sensitivity_low">منخفضة</string>
     <string name="sensitivity_normal">عادية</string>
@@ -140,5 +143,6 @@
     <string name="reason_no_sensor">لا يوجد حساس ضوء ← الوضع التلقائي غير متاح</string>
     <string name="reason_sunlight">ضوء النهار ← يبقى مطفأً</string>
     <string name="reason_blocked">الحساس مغطى ← يبقى مطفأً</string>
+    <string name="reason_face_down">الشاشة للأسفل ← %1$s</string>
     <string name="reason_close">جسم قريب ← %1$s</string>
 </resources>
