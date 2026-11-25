@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <group android:name="mark" android:pivotX="54" android:pivotY="54">
+        <path android:name="beam" android:pathData="M45,41 L37,27 H71 L63,41 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="linear" android:startX="54" android:startY="41"
+                    android:endX="54" android:endY="27"
+                    android:startColor="#CC62E8FF" android:endColor="#0D62E8FF" />
+            </aapt:attr>
+        </path>
+        <path android:name="body" android:pathData="M41,44 H67 L63,55 H61 V78 Q61,82 57,82 H51 Q47,82 47,78 V55 H45 Z M53,62 Q52,62 52,63 V67 Q52,68 53,68 H55 Q56,68 56,67 V63 Q56,62 55,62 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="linear" android:startX="54" android:startY="44"
+                    android:endX="54" android:endY="82"
+                    android:startColor="#62E8FF" android:endColor="#3B8CFF" />
+            </aapt:attr>
+        </path>
+    </group>
+</vector>

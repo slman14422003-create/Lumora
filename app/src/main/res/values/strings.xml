@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LUMORA</string>
+    <string name="tile_label">Flashlight</string>
+
+    <!-- Status -->
+    <string name="status_light_off">Light off</string>
+    <string name="status_light_on">Light on</string>
+    <string name="status_auto_on">Auto: light on</string>
+    <string name="status_auto_watching">Auto: watching</string>
+    <string name="status_description">Status: %1$s</string>
+    <string name="cd_power_on">Turn flashlight on</string>
+    <string name="cd_power_off">Turn flashlight off</string>
+    <string name="cd_open_settings">Open settings</string>
+
+    <!-- Brightness -->
+    <string name="brightness">Brightness</string>
+    <string name="sensitivity">Sensitivity</string>
+    <string name="strength_max">Max</string>
+    <string name="strength_on_off">On / off</string>
+    <string name="strength_fraction">%1$d / 10</string>
+    <string name="strength_unsupported_note">This device can\'t change brightness. The light can only be on or off.</string>
+    <string name="value_description">%1$s: %2$s</string>
+
+    <!-- Modes -->
+    <string name="mode_manual">Manual</string>
+    <string name="mode_auto">Auto</string>
+    <string name="cd_manual_mode">Manual mode</string>
+    <string name="cd_auto_mode">Auto mode</string>
+    <string name="state_selected">Selected</string>
+    <string name="state_not_selected">Not selected</string>
+
+    <!-- Light patterns -->
+    <string name="light_mode_title">Light mode</string>
+    <string name="light_mode_steady">Steady</string>
+    <string name="light_mode_strobe">Strobe</string>
+    <string name="light_mode_sos">SOS</string>
+    <string name="flash_warning">Flashing lights can trigger seizures in people with photosensitive epilepsy. Strobe and SOS run only while LUMORA is open.</string>
+
+    <!-- Auto-off timer -->
+    <string name="timer_title">Auto-off timer</string>
+    <string name="timer_off">Off</string>
+    <string name="timer_minutes">%1$d min</string>
+    <string name="timer_note">Turns off automatically at %1$s</string>
+    <string name="toast_timer_expired">Auto-off timer: the light was turned off.</string>
+
+    <!-- Auto panel -->
+    <string name="history_title">Last 30 seconds</string>
+    <string name="history_legend">Line: lux. Shaded: flashlight strength.</string>
+    <string name="environment_title">Light environment</string>
+    <string name="environment_detail">%1$s, %2$s</string>
+    <string name="source_light">Light</string>
+    <string name="source_front_cam">Front cam</string>
+    <string name="source_proximity">Proximity</string>
+    <string name="source_motion">Motion</string>
+    <string name="chip_state_active">active</string>
+    <string name="chip_state_inactive">inactive</string>
+    <string name="chip_state_unavailable">unavailable</string>
+    <string name="chip_description">%1$s source: %2$s</string>
+
+    <!-- Gauge and chart -->
+    <string name="lux_none">— lux</string>
+    <string name="lux_value">%1$d lux</string>
+    <string name="cd_lux_none">Ambient light, no reading yet</string>
+    <string name="cd_lux_value">Ambient light, %1$d lux</string>
+    <string name="cd_spark_none">Light history for the last 30 seconds, no data yet</string>
+    <string name="cd_spark_value">Light history for the last 30 seconds. Now %1$d lux, flashlight %2$s</string>
+    <string name="spark_off">off</string>
+    <string name="spark_percent">%1$d percent</string>
+
+    <!-- Home -->
+    <string name="keep_on">Keep light on in background</string>
+    <string name="reading_mode">Reading mode</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="amoled_theme">Pure black (AMOLED) theme</string>
+    <string name="auto_preset">Auto preset</string>
+    <string name="preset_eco">Eco</string>
+    <string name="preset_balanced">Balanced</string>
+    <string name="preset_max">Max</string>
+    <string name="calibration_title">Calibration (in Auto mode)</string>
+    <string name="calibrate_dark">Calibrate dark</string>
+    <string name="calibrate_bright">Calibrate bright</string>
+    <string name="camera_sensing">Camera light sensing (optional)</string>
+    <string name="cd_camera_sensing">Camera light sensing</string>
+    <string name="camera_privacy">Camera frames are measured in memory on your phone and are never saved or sent anywhere.</string>
+    <string name="reset_learning">Reset learned adjustments</string>
+    <string name="screen_fallback">Use the screen as a light when there is no flash</string>
+    <string name="open_screen_light">Open screen light</string>
+    <string name="sensitivity_low">Low</string>
+    <string name="sensitivity_normal">Normal</string>
+    <string name="sensitivity_high">High</string>
+
+    <!-- Screen light -->
+    <string name="screen_light_reading">Reading light. Tap to close.</string>
+    <string name="screen_light_white">Screen light. Tap to close.</string>
+
+    <!-- Messages -->
+    <string name="toast_calibrated">Calibration saved.</string>
+    <string name="toast_calibration_failed">Couldn\'t calibrate. Use Auto mode, wait for a reading, and keep dark and bright levels far apart.</string>
+    <string name="toast_camera_on">Camera sensing is on.</string>
+    <string name="toast_camera_denied">Camera not allowed. Using the light sensor only.</string>
+    <string name="toast_learning_cleared">Learned adjustments cleared.</string>
+    <string name="toast_no_light_sensor">This device has no ambient light sensor.</string>
+    <string name="toast_no_flash">No flashlight hardware was detected. You can turn on the screen light fallback in Settings.</string>
+    <string name="toast_flash_unavailable">Flash unavailable: %1$s</string>
+    <string name="toast_device_restriction">device restriction</string>
+
+    <!-- Scenes -->
+    <string name="scene_unknown">Reading the scene</string>
+    <string name="scene_unknown_tip">Hold the phone still for a moment.</string>
+    <string name="scene_dark">Dark</string>
+    <string name="scene_dark_tip">A low level is easier on adapted eyes.</string>
+    <string name="scene_dim">Dim room</string>
+    <string name="scene_dim_tip">Add some room light before long reading.</string>
+    <string name="scene_indoor">Indoor lamp</string>
+    <string name="scene_indoor_tip">You likely don\'t need the flashlight.</string>
+    <string name="scene_daylight">Daylight</string>
+    <string name="scene_daylight_tip">Auto stays off in daylight.</string>
+    <string name="scene_sun">Direct sun</string>
+    <string name="scene_sun_tip">The flashlight won\'t be visible here.</string>
+    <string name="scene_covered">Covered</string>
+    <string name="scene_covered_tip">Uncover the top of the phone.</string>
+
+    <string name="warmth_unknown">color unknown</string>
+    <string name="warmth_warm">warm</string>
+    <string name="warmth_neutral">neutral</string>
+    <string name="warmth_cool">cool</string>
+
+    <string name="flicker_unknown">flicker not measurable</string>
+    <string name="flicker_steady">stable</string>
+    <string name="flicker_50">flickering (50 Hz mains)</string>
+    <string name="flicker_60">flickering (60 Hz mains)</string>
+
+    <string name="hint_blocked">Something seems to be covering the light sensor.</string>
+    <string name="hint_stuck">Reading stays at 0 while moving. If it isn\'t pitch dark, check the top of the screen.</string>
+
+    <!-- Auto reasons -->
+    <string name="result_off">off</string>
+    <string name="result_on">on</string>
+    <string name="result_percent">%1$d%%</string>
+    <string name="reason_starting">Starting → reading the light</string>
+    <string name="reason_dark">Dark room → %1$s</string>
+    <string name="reason_dim">Dim room → %1$s</string>
+    <string name="reason_bright">Bright room → %1$s</string>
+    <string name="reason_waiting">Light changed → checking it\'s steady</string>
+    <string name="reason_covered_paused">Covered → paused</string>
+    <string name="reason_covered_holding">Covered → holding %1$s</string>
+    <string name="reason_override">Your choice → %1$s for 2 min</string>
+    <string name="reason_thermal">Phone is hot → %1$s</string>
+    <string name="reason_paused">Phone is still → resting at %1$s</string>
+    <string name="reason_no_sensor">No light sensor → Auto unavailable</string>
+    <string name="reason_sunlight">Daylight → staying off</string>
+    <string name="reason_blocked">Sensor blocked → staying off</string>
+    <string name="reason_close">Close subject → %1$s</string>
+</resources>

@@ -3,4 +3,25 @@
     <color name="lumora_night">#070B16</color>
     <color name="lumora_blue">#45B7FF</color>
     <color name="lumora_cyan">#62E8FF</color>
+    <color name="lumora_warm">#FFC76A</color>
+    <color name="lumora_text">#F1F6FF</color>
+    <color name="lumora_muted">#A9B8D0</color>
+    <color name="lumora_card">#111A2D</color>
+    <color name="lumora_stroke">#263653</color>
+    <color name="lumora_selected">#164B7E</color>
+    <color name="lumora_power_off_start">#1C365C</color>
+    <color name="lumora_power_on_start">#FFF4D6</color>
+    <color name="lumora_on_warm">#301E00</color>
+    <color name="lumora_switch_track_off">#4B5B78</color>
+    <color name="lumora_white">#FFFFFF</color>
+    <color name="lumora_black">#000000</color>
+    <color name="lumora_transparent">#00000000</color>
+    <color name="amoled_card">#0A0A0C</color>
+    <color name="amoled_stroke">#262A33</color>
+    <color name="amoled_power_off_start">#161920</color>
+    <color name="screen_light_warm">#FFCE96</color>
+    <color name="screen_light_warm_text">#5A381C</color>
+    <color name="screen_light_white">#FFFFFF</color>
+    <color name="screen_light_white_text">#4A4F5C</color>
+    <color name="lumora_slider_track">#2B3A57</color>
 </resources>

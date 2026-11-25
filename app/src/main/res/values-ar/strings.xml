@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LUMORA</string>
+    <string name="tile_label">كشاف الضوء</string>
+
+    <string name="status_light_off">الضوء مطفأ</string>
+    <string name="status_light_on">الضوء يعمل</string>
+    <string name="status_auto_on">تلقائي: الضوء يعمل</string>
+    <string name="status_auto_watching">تلقائي: قيد المراقبة</string>
+    <string name="status_description">الحالة: %1$s</string>
+    <string name="cd_power_on">تشغيل الكشاف</string>
+    <string name="cd_power_off">إطفاء الكشاف</string>
+    <string name="cd_open_settings">فتح الإعدادات</string>
+
+    <string name="brightness">السطوع</string>
+    <string name="sensitivity">الحساسية</string>
+    <string name="strength_max">أقصى</string>
+    <string name="strength_on_off">تشغيل / إطفاء</string>
+    <string name="strength_fraction">%1$d / 10</string>
+    <string name="strength_unsupported_note">لا يدعم هذا الجهاز تغيير السطوع. يمكن فقط تشغيل الضوء أو إطفاؤه.</string>
+    <string name="value_description">%1$s: %2$s</string>
+
+    <string name="mode_manual">يدوي</string>
+    <string name="mode_auto">تلقائي</string>
+    <string name="cd_manual_mode">الوضع اليدوي</string>
+    <string name="cd_auto_mode">الوضع التلقائي</string>
+    <string name="state_selected">محدد</string>
+    <string name="state_not_selected">غير محدد</string>
+
+    <string name="light_mode_title">وضع الضوء</string>
+    <string name="light_mode_steady">ثابت</string>
+    <string name="light_mode_strobe">وميض</string>
+    <string name="light_mode_sos">استغاثة</string>
+    <string name="flash_warning">قد يسبب الضوء الوامض نوبات لدى المصابين بصرع حساسية الضوء. يعمل الوميض والاستغاثة فقط أثناء فتح التطبيق.</string>
+
+    <string name="timer_title">مؤقت الإطفاء التلقائي</string>
+    <string name="timer_off">إيقاف</string>
+    <string name="timer_minutes">%1$d د</string>
+    <string name="timer_note">يُطفأ تلقائيًا عند %1$s</string>
+    <string name="toast_timer_expired">مؤقت الإطفاء: تم إطفاء الضوء.</string>
+
+    <string name="history_title">آخر 30 ثانية</string>
+    <string name="history_legend">الخط: لوكس. المنطقة المظللة: شدة الكشاف.</string>
+    <string name="environment_title">بيئة الإضاءة</string>
+    <string name="environment_detail">%1$s، %2$s</string>
+    <string name="source_light">الضوء</string>
+    <string name="source_front_cam">الكاميرا الأمامية</string>
+    <string name="source_proximity">القرب</string>
+    <string name="source_motion">الحركة</string>
+    <string name="chip_state_active">نشط</string>
+    <string name="chip_state_inactive">غير نشط</string>
+    <string name="chip_state_unavailable">غير متاح</string>
+    <string name="chip_description">مصدر %1$s: %2$s</string>
+
+    <string name="lux_none">— لوكس</string>
+    <string name="lux_value">%1$d لوكس</string>
+    <string name="cd_lux_none">الإضاءة المحيطة، لا توجد قراءة بعد</string>
+    <string name="cd_lux_value">الإضاءة المحيطة، %1$d لوكس</string>
+    <string name="cd_spark_none">سجل الإضاءة لآخر 30 ثانية، لا توجد بيانات بعد</string>
+    <string name="cd_spark_value">سجل الإضاءة لآخر 30 ثانية. الآن %1$d لوكس، الكشاف %2$s</string>
+    <string name="spark_off">مطفأ</string>
+    <string name="spark_percent">%1$d بالمئة</string>
+
+    <string name="keep_on">إبقاء الضوء يعمل في الخلفية</string>
+    <string name="reading_mode">وضع القراءة</string>
+
+    <string name="settings_title">الإعدادات</string>
+    <string name="amoled_theme">سمة الأسود الخالص (AMOLED)</string>
+    <string name="auto_preset">إعداد الوضع التلقائي</string>
+    <string name="preset_eco">اقتصادي</string>
+    <string name="preset_balanced">متوازن</string>
+    <string name="preset_max">أقصى</string>
+    <string name="calibration_title">المعايرة (في الوضع التلقائي)</string>
+    <string name="calibrate_dark">معايرة الظلام</string>
+    <string name="calibrate_bright">معايرة الإضاءة العالية</string>
+    <string name="camera_sensing">استشعار الضوء بالكاميرا (اختياري)</string>
+    <string name="cd_camera_sensing">استشعار الضوء بالكاميرا</string>
+    <string name="camera_privacy">تُقاس إطارات الكاميرا في ذاكرة هاتفك ولا تُحفظ ولا تُرسل إلى أي جهة.</string>
+    <string name="reset_learning">إعادة ضبط التعديلات المتعلمة</string>
+    <string name="screen_fallback">استخدام الشاشة كضوء عند عدم وجود فلاش</string>
+    <string name="open_screen_light">فتح ضوء الشاشة</string>
+    <string name="sensitivity_low">منخفضة</string>
+    <string name="sensitivity_normal">عادية</string>
+    <string name="sensitivity_high">عالية</string>
+
+    <string name="screen_light_reading">ضوء القراءة. المس للإغلاق.</string>
+    <string name="screen_light_white">ضوء الشاشة. المس للإغلاق.</string>
+
+    <string name="toast_calibrated">تم حفظ المعايرة.</string>
+    <string name="toast_calibration_failed">تعذرت المعايرة. استخدم الوضع التلقائي وانتظر قراءة، وأبقِ مستويي الظلام والإضاءة متباعدين.</string>
+    <string name="toast_camera_on">استشعار الكاميرا قيد التشغيل.</string>
+    <string name="toast_camera_denied">الكاميرا غير مسموح بها. سيتم استخدام حساس الضوء فقط.</string>
+    <string name="toast_learning_cleared">تم مسح التعديلات المتعلمة.</string>
+    <string name="toast_no_light_sensor">لا يحتوي هذا الجهاز على حساس للإضاءة المحيطة.</string>
+    <string name="toast_no_flash">لم يتم العثور على فلاش في الجهاز. يمكنك تفعيل بديل ضوء الشاشة من الإعدادات.</string>
+    <string name="toast_flash_unavailable">الفلاش غير متاح: %1$s</string>
+    <string name="toast_device_restriction">قيد من الجهاز</string>
+
+    <string name="scene_unknown">جارٍ قراءة المشهد</string>
+    <string name="scene_unknown_tip">أبقِ الهاتف ثابتًا للحظة.</string>
+    <string name="scene_dark">ظلام</string>
+    <string name="scene_dark_tip">المستوى المنخفض ألطف على العيون المتكيفة.</string>
+    <string name="scene_dim">غرفة خافتة</string>
+    <string name="scene_dim_tip">أضف بعض الإضاءة قبل القراءة الطويلة.</string>
+    <string name="scene_indoor">مصباح داخلي</string>
+    <string name="scene_indoor_tip">غالبًا لا تحتاج إلى الكشاف.</string>
+    <string name="scene_daylight">ضوء النهار</string>
+    <string name="scene_daylight_tip">يبقى الوضع التلقائي مطفأً في ضوء النهار.</string>
+    <string name="scene_sun">شمس مباشرة</string>
+    <string name="scene_sun_tip">لن يكون الكشاف مرئيًا هنا.</string>
+    <string name="scene_covered">مغطى</string>
+    <string name="scene_covered_tip">اكشف الجزء العلوي من الهاتف.</string>
+
+    <string name="warmth_unknown">اللون غير معروف</string>
+    <string name="warmth_warm">دافئ</string>
+    <string name="warmth_neutral">محايد</string>
+    <string name="warmth_cool">بارد</string>
+
+    <string name="flicker_unknown">تعذر قياس الوميض</string>
+    <string name="flicker_steady">مستقر</string>
+    <string name="flicker_50">وميض (تيار 50 هرتز)</string>
+    <string name="flicker_60">وميض (تيار 60 هرتز)</string>
+
+    <string name="hint_blocked">يبدو أن شيئًا يغطي حساس الضوء.</string>
+    <string name="hint_stuck">تبقى القراءة صفرًا أثناء الحركة. إن لم يكن الظلام دامسًا فتحقق من أعلى الشاشة.</string>
+
+    <string name="result_off">إطفاء</string>
+    <string name="result_on">تشغيل</string>
+    <string name="result_percent">%1$d%%</string>
+    <string name="reason_starting">البدء ← قراءة الضوء</string>
+    <string name="reason_dark">غرفة مظلمة ← %1$s</string>
+    <string name="reason_dim">غرفة خافتة ← %1$s</string>
+    <string name="reason_bright">غرفة مضيئة ← %1$s</string>
+    <string name="reason_waiting">تغير الضوء ← التأكد من استقراره</string>
+    <string name="reason_covered_paused">مغطى ← متوقف مؤقتًا</string>
+    <string name="reason_covered_holding">مغطى ← الإبقاء على %1$s</string>
+    <string name="reason_override">اختيارك ← %1$s لمدة دقيقتين</string>
+    <string name="reason_thermal">الهاتف ساخن ← %1$s</string>
+    <string name="reason_paused">الهاتف ثابت ← سكون عند %1$s</string>
+    <string name="reason_no_sensor">لا يوجد حساس ضوء ← الوضع التلقائي غير متاح</string>
+    <string name="reason_sunlight">ضوء النهار ← يبقى مطفأً</string>
+    <string name="reason_blocked">الحساس مغطى ← يبقى مطفأً</string>
+    <string name="reason_close">جسم قريب ← %1$s</string>
+</resources>

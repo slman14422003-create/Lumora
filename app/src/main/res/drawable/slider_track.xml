@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background" android:gravity="center_vertical|fill_horizontal" android:height="10dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/lumora_slider_track" />
+            <corners android:radius="5dp" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress" android:gravity="center_vertical|fill_horizontal" android:height="10dp">
+        <clip>
+            <shape android:shape="rectangle">
+                <gradient android:startColor="@color/lumora_blue" android:endColor="@color/lumora_cyan" />
+                <corners android:radius="5dp" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

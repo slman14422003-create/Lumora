@@ -10,8 +10,8 @@ android {
         applicationId = "com.lumora.flashlight"
         minSdk = 23
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
     }
 
     buildTypes {
@@ -38,4 +38,5 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.core:core-splashscreen:1.2.0")
+    testImplementation("junit:junit:4.13.2")
 }
