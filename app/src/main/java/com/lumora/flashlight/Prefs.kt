@@ -8,4 +8,6 @@ object Prefs {
     const val TIMER_ENDS_AT = "auto_off_ends_at"
     const val LANGUAGE = "app_language"
     const val SCREEN_FALLBACK = "screen_light_fallback"
+    const val STATUS_ICON = "status_bar_icon"
+    const val BG_AUTO = "background_auto"
 }

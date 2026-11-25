@@ -2,6 +2,18 @@ plugins {
     id("com.android.application")
 }
 
+val releaseStoreFile = System.getenv("LUMORA_KEYSTORE_FILE")
+    ?.takeIf { it.isNotBlank() }
+    ?.let { rootProject.file(it) }
+    ?.takeIf { it.exists() }
+val releaseStorePassword = System.getenv("LUMORA_KEYSTORE_PASSWORD")
+val releaseKeyAlias = System.getenv("LUMORA_KEY_ALIAS")
+val releaseKeyPassword = System.getenv("LUMORA_KEY_PASSWORD")
+val canSignRelease = releaseStoreFile != null &&
+    !releaseStorePassword.isNullOrEmpty() &&
+    !releaseKeyAlias.isNullOrEmpty() &&
+    !releaseKeyPassword.isNullOrEmpty()
+
 android {
     namespace = "com.lumora.flashlight"
     compileSdk = 36
@@ -10,8 +22,19 @@ android {
         applicationId = "com.lumora.flashlight"
         minSdk = 23
         targetSdk = 36
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = 4
+        versionName = "1.3.0"
+    }
+
+    signingConfigs {
+        if (canSignRelease) {
+            create("release") {
+                storeFile = releaseStoreFile
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
     }
 
     buildTypes {
@@ -20,8 +43,11 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
-            // Signed with the debug key so the CI release APK installs; use your own keystore for the Play Store.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (canSignRelease) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

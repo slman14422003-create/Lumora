@@ -52,6 +52,10 @@ class MainActivity : Activity(), MainScreen.Listener {
     private var patternIndex = 0
     private var ignoreTorchUntil = 0L
     private val patternTick = Runnable { stepPattern() }
+    private var pendingAutoAfterCamera = false
+    private val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == Prefs.BG_AUTO) handler.post { syncBackgroundAuto() }
+    }
 
     override fun attachBaseContext(base: Context) {
         val code = base.getSharedPreferences(Prefs.FILE, MODE_PRIVATE)
@@ -94,7 +98,11 @@ class MainActivity : Activity(), MainScreen.Listener {
         screen.preset = auto.preset
         screen.sensitivity = auto.sensitivity
         screen.cameraEnabled = auto.cameraEnabled
+        screen.statusIcon = prefs.getBoolean(Prefs.STATUS_ICON, false)
+        screen.backgroundAuto = prefs.getBoolean(Prefs.BG_AUTO, false)
         setContentView(screen.root)
+        visible = true
+        if (screen.statusIcon) LumoraService.start(this)
         AutoOffTimer.onExpired = { onTimerExpired() }
         registerTorchCallback()
         refreshUi()
@@ -191,36 +199,99 @@ class MainActivity : Activity(), MainScreen.Listener {
     }
 
     override fun onCalibrate(bright: Boolean) {
-        val outcome = auto.calibrate(bright)
-        val message = when (outcome.status) {
-            CalibrationStatus.SAVED -> getString(
-                if (bright) R.string.toast_calibrated_bright else R.string.toast_calibrated_dark,
-                outcome.lux.roundToInt()
-            )
-            CalibrationStatus.NOT_RUNNING -> getString(R.string.toast_calibration_not_running)
-            CalibrationStatus.NO_READING -> getString(R.string.toast_calibration_no_reading)
-            CalibrationStatus.TOO_DIM -> getString(R.string.toast_calibration_too_dim)
+        Toast.makeText(this, R.string.toast_calibration_measuring, Toast.LENGTH_SHORT).show()
+        auto.calibrateNow(bright) { outcome ->
+            if (isDestroyed) return@calibrateNow
+            val message = when (outcome.status) {
+                CalibrationStatus.SAVED -> getString(
+                    if (bright) R.string.toast_calibrated_bright else R.string.toast_calibrated_dark,
+                    outcome.lux.roundToInt()
+                )
+                CalibrationStatus.NO_READING -> getString(R.string.toast_calibration_no_reading)
+                CalibrationStatus.TOO_DIM -> getString(R.string.toast_calibration_too_dim)
+                CalibrationStatus.NO_SOURCE -> getString(R.string.toast_calibration_no_source)
+                CalibrationStatus.COVERED -> getString(R.string.toast_calibration_covered)
+                CalibrationStatus.UNSTABLE -> getString(R.string.toast_calibration_unstable)
+            }
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
         }
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     override fun onCameraToggled(checked: Boolean) {
         if (checked && !hasCameraPermission(this)) {
             requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_REQUEST)
         } else {
-            auto.cameraEnabled = checked
-            screen.cameraEnabled = checked
+            applyCamera(checked)
+        }
+    }
+
+    private fun applyCamera(enabled: Boolean) {
+        auto.cameraEnabled = enabled
+        screen.cameraEnabled = enabled
+        if (enabled && pendingAutoAfterCamera) {
+            pendingAutoAfterCamera = false
+            enableAutoMode()
         }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode != CAMERA_REQUEST) return
         val granted = grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED
-        auto.cameraEnabled = granted
-        screen.cameraEnabled = granted
-        val message = getString(if (granted) R.string.toast_camera_on else R.string.toast_camera_denied)
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        when (requestCode) {
+            CAMERA_REQUEST -> {
+                if (!granted) pendingAutoAfterCamera = false
+                applyCamera(granted)
+                val message = getString(if (granted) R.string.toast_camera_on else R.string.toast_camera_denied)
+                Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+            }
+            NOTIFICATION_REQUEST ->
+                if (!granted) Toast.makeText(this, R.string.toast_notifications_denied, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    override fun onStatusIconChanged(checked: Boolean) {
+        prefs.edit().putBoolean(Prefs.STATUS_ICON, checked).apply()
+        if (checked) {
+            requestNotificationPermission()
+            LumoraService.start(this)
+        } else {
+            prefs.edit().putBoolean(Prefs.BG_AUTO, false).apply()
+            screen.backgroundAuto = false
+            LumoraService.stop(this)
+        }
+    }
+
+    override fun onBackgroundAutoChanged(checked: Boolean) {
+        if (checked && !auto.sources.light) {
+            Toast.makeText(this, R.string.toast_bg_auto_needs_sensor, Toast.LENGTH_LONG).show()
+            screen.backgroundAuto = false
+            return
+        }
+        prefs.edit().putBoolean(Prefs.BG_AUTO, checked).apply()
+        if (checked) {
+            prefs.edit().putBoolean(Prefs.STATUS_ICON, true).apply()
+            screen.statusIcon = true
+            requestNotificationPermission()
+            LumoraService.start(this)
+            if (!autoMode) enableAutoMode()
+        } else {
+            LumoraService.sync(this)
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_REQUEST)
+        }
+    }
+
+    private fun backgroundAutoActive() =
+        prefs.getBoolean(Prefs.BG_AUTO, false) && LumoraService.running
+
+    private fun syncBackgroundAuto() {
+        if (inForeground && !autoMode && prefs.getBoolean(Prefs.BG_AUTO, false)) enableAutoMode()
     }
 
     override fun onResetLearning() {
@@ -306,8 +377,14 @@ class MainActivity : Activity(), MainScreen.Listener {
     }
 
     private fun enableAutoMode() {
-        if (!auto.sources.light && !auto.cameraEnabled) {
-            Toast.makeText(this, R.string.toast_no_light_sensor, Toast.LENGTH_LONG).show()
+        if (!auto.canSense()) {
+            if (TorchSupport.hasFrontCamera(cameraManager)) {
+                pendingAutoAfterCamera = true
+                Toast.makeText(this, R.string.toast_auto_using_camera, Toast.LENGTH_LONG).show()
+                onCameraToggled(true)
+            } else {
+                Toast.makeText(this, R.string.toast_no_sensors_at_all, Toast.LENGTH_LONG).show()
+            }
             return
         }
         if (autoMode) return
@@ -459,14 +536,20 @@ class MainActivity : Activity(), MainScreen.Listener {
     override fun onResume() {
         super.onResume()
         inForeground = true
+        visible = true
+        prefs.registerOnSharedPreferenceChangeListener(prefListener)
+        LumoraService.sync(this)
         auto.setForeground(true)
         auto.setActive(true)
+        syncBackgroundAuto()
         refreshUi()
     }
 
     override fun onPause() {
         super.onPause()
         inForeground = false
+        visible = false
+        prefs.unregisterOnSharedPreferenceChangeListener(prefListener)
         auto.setForeground(false)
         if (patternRunning) {
             // SOS and strobe only run while the app is visible.
@@ -475,6 +558,15 @@ class MainActivity : Activity(), MainScreen.Listener {
             torchOn = false
             lastStrength = -1
             refreshUi()
+        }
+        if (backgroundAutoActive()) {
+            if (autoMode) {
+                autoMode = false
+                auto.stop()
+            }
+            auto.setActive(false)
+            LumoraService.sync(this)
+            return
         }
         if (keepOnInBackground) {
             // Light stays on; AUTO keeps sensing only while the light is on so it can still switch off.
@@ -497,13 +589,19 @@ class MainActivity : Activity(), MainScreen.Listener {
         handler.removeCallbacks(patternTick)
         auto.release()
         torchCallback?.let { try { cameraManager.unregisterTorchCallback(it) } catch (_: Exception) {} }
-        try { torchCameraId?.let { cameraManager.setTorchMode(it, false) } } catch (_: Exception) {}
-        AutoOffTimer.cancel(this)
+        if (!backgroundAutoActive()) {
+            try { torchCameraId?.let { cameraManager.setTorchMode(it, false) } } catch (_: Exception) {}
+            AutoOffTimer.cancel(this)
+        }
         super.onDestroy()
     }
 
     companion object {
+        @Volatile
+        var visible = false
+            private set
         private const val CAMERA_REQUEST = 41
+        private const val NOTIFICATION_REQUEST = 42
         private const val READING_STRENGTH = 3
         private const val TORCH_SETTLE_MS = 500L
     }

@@ -73,6 +73,8 @@ class MainScreen(
         fun onScreenFallbackChanged(checked: Boolean)
         fun onOpenScreenLight()
         fun onLanguageSelected(code: String)
+        fun onStatusIconChanged(checked: Boolean)
+        fun onBackgroundAutoChanged(checked: Boolean)
     }
 
     private fun color(@ColorRes id: Int) = activity.getColor(id)
@@ -108,6 +110,18 @@ class MainScreen(
             cameraSwitch?.let { if (it.isChecked != value) it.isChecked = value }
         }
     private var cameraSwitch: Switch? = null
+    var statusIcon = false
+        set(value) {
+            field = value
+            statusIconSwitch?.let { if (it.isChecked != value) it.isChecked = value }
+        }
+    var backgroundAuto = false
+        set(value) {
+            field = value
+            backgroundAutoSwitch?.let { if (it.isChecked != value) it.isChecked = value }
+        }
+    private var statusIconSwitch: Switch? = null
+    private var backgroundAutoSwitch: Switch? = null
 
     val root = ScrollView(activity).apply {
         isFillViewport = true
@@ -412,6 +426,30 @@ class MainScreen(
             language = it
             listener.onLanguageSelected(it)
         }
+        val iconLine = row()
+        iconLine.addView(text(string(R.string.status_icon), 15f, textColor), weighted())
+        val iconSwitch = switch(statusIcon, string(R.string.status_icon)) {
+            if (it != statusIcon) {
+                statusIcon = it
+                listener.onStatusIconChanged(it)
+            }
+        }
+        statusIconSwitch = iconSwitch
+        iconLine.addView(iconSwitch)
+        sheet.addView(iconLine, match().apply { topMargin = dp(14) })
+        sheet.addView(text(string(R.string.status_icon_note), 13f, muted), match())
+        val backgroundLine = row()
+        backgroundLine.addView(text(string(R.string.bg_auto), 15f, textColor), weighted())
+        val backgroundSwitch = switch(backgroundAuto, string(R.string.bg_auto)) {
+            if (it != backgroundAuto) {
+                backgroundAuto = it
+                listener.onBackgroundAutoChanged(it)
+            }
+        }
+        backgroundAutoSwitch = backgroundSwitch
+        backgroundLine.addView(backgroundSwitch)
+        sheet.addView(backgroundLine, match().apply { topMargin = dp(10) })
+        sheet.addView(text(string(R.string.bg_auto_note), 13f, muted), match())
         sheet.addView(
             text(string(R.string.calibration_title), 15f, muted),
             match().apply { topMargin = dp(16) }
@@ -441,7 +479,11 @@ class MainScreen(
             listener.onOpenScreenLight()
         }, match())
         sheet.addView(button(string(R.string.reset_learning)) { listener.onResetLearning() }, match())
-        dialog.setOnDismissListener { cameraSwitch = null }
+        dialog.setOnDismissListener {
+            cameraSwitch = null
+            statusIconSwitch = null
+            backgroundAutoSwitch = null
+        }
         dialog.setContentView(ScrollView(activity).apply { addView(sheet) })
         dialog.show()
         dialog.window?.apply {

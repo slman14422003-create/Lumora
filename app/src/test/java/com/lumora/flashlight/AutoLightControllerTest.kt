@@ -122,4 +122,28 @@ class AutoLightControllerTest {
         assertEquals(10, c.run(2f, 5000).strength)
         assertEquals(0, c.run(120f, 8000).strength)
     }
+
+    @Test fun calibrateAtUsesGivenReading() {
+        val c = AutoLightController(Sources(true, true, false, true))
+        val result = c.calibrateAt(120f, bright = true)
+        assertTrue(result != null && result.valid && result.brightLux == 120f)
+    }
+
+    @Test fun calibrateAtRejectsInvalidReadings() {
+        val c = AutoLightController(Sources(true, true, false, true))
+        assertNull(c.calibrateAt(Float.NaN, bright = true))
+        assertNull(c.calibrateAt(-1f, bright = false))
+    }
+
+    @Test fun adjustAppliesSensitivity() {
+        val c = AutoLightController(Sources(true, true, false, true))
+        c.sensitivity = Sensitivity.HIGH
+        assertEquals(50f, c.adjust(100f), .001f)
+    }
+
+    @Test fun failedLightSensorReportsNoSensor() {
+        val c = controller()
+        c.lightFailed = true
+        assertEquals(Reason.NO_LIGHT_SENSOR, c.output(now).reason)
+    }
 }

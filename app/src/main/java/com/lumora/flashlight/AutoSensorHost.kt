@@ -17,6 +17,7 @@ import android.os.SystemClock
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import java.util.Calendar
+import kotlin.math.ln
 
 data class Environment(
     val scene: Scene = Scene.UNKNOWN,
@@ -26,7 +27,7 @@ data class Environment(
     val cameraActive: Boolean = false
 )
 
-enum class CalibrationStatus { SAVED, NOT_RUNNING, NO_READING, TOO_DIM }
+enum class CalibrationStatus { SAVED, NO_READING, TOO_DIM, NO_SOURCE, COVERED, UNSTABLE }
 
 class CalibrationOutcome(val status: CalibrationStatus, val lux: Float = 0f)
 
@@ -70,6 +71,16 @@ class AutoSensorHost(
     private var manualChoice: Int? = null
     private val burstTimes = mutableListOf<Long>()
     private val burstValues = mutableListOf<Float>()
+    private var bgMode = false
+    private var released = false
+    private var lightUsable = true
+    private var lightRegisteredAt = 0L
+    private var lightEventAt = 0L
+    private var learnedPeriod: String? = null
+    private var learnedCache = Learned()
+    private var calibrationSink: ((Float) -> Unit)? = null
+    private var calibrationListener: SensorEventListener? = null
+    private var calibrationEnd: Runnable? = null
 
     var environment = Environment()
         private set
@@ -90,7 +101,8 @@ class AutoSensorHost(
         cameraLux = lux
         cameraReadAt = now()
         warmth = analyzer.warmth(red, blue)
-        if (light == null) controller.onLux(lux)
+        calibrationSink?.invoke(lux)
+        if (light == null || !lightUsable) controller.onLux(lux)
     }
 
     private val burstListener = object : SensorEventListener {
@@ -196,9 +208,19 @@ class AutoSensorHost(
     }
 
     fun release() {
+        if (released) return
+        released = true
+        cancelCalibration()
         stop()
-        context.unregisterReceiver(screenReceiver)
+        try { context.unregisterReceiver(screenReceiver) } catch (_: IllegalArgumentException) { }
     }
+
+    fun setBackgroundMode(value: Boolean) {
+        bgMode = value
+        update()
+    }
+
+    fun canSense() = (light != null && lightUsable) || cameraEnabled
 
     fun syncTorch(torchOn: Boolean) = controller.syncTorch(torchOn)
 
@@ -254,6 +276,7 @@ class AutoSensorHost(
         controller.learned = Learned()
         controller.calibration = Calibration()
         manualChoice = null
+        learnedPeriod = null
         prefs.edit().remove(KEY_DARK).remove(KEY_BRIGHT).remove(KEY_LOG).also { editor ->
             listOf("day", "night").forEach { editor.remove("shift_$it").remove("bias_$it") }
         }.apply()
@@ -263,11 +286,18 @@ class AutoSensorHost(
 
     private fun period() = if (hour() in 7..18) "day" else "night"
 
-    private fun loadLearned() =
-        Learned(prefs.getFloat("shift_${period()}", 0f), prefs.getFloat("bias_${period()}", 0f))
+    private fun loadLearned(): Learned {
+        val current = period()
+        if (current == learnedPeriod) return learnedCache
+        learnedPeriod = current
+        learnedCache = Learned(prefs.getFloat("shift_$current", 0f), prefs.getFloat("bias_$current", 0f))
+        return learnedCache
+    }
 
     private fun save(learned: Learned, lux: Float, strength: Int) {
         controller.learned = learned
+        learnedPeriod = period()
+        learnedCache = learned
         val entries = prefs.getString(KEY_LOG, "").orEmpty().split(';').filter { it.isNotEmpty() }
         val log = (entries + "${lux.toInt()},${hour()},$strength").takeLast(50).joinToString(";")
         prefs.edit()
@@ -280,12 +310,17 @@ class AutoSensorHost(
     private fun analyze() {
         val now = now()
         controller.learned = loadLearned()
-        controller.cameraFallback = light == null && cameraEnabled
+        val dead = light != null && lightRegistered && lightEventAt == 0L &&
+            now - lightRegisteredAt > DEAD_SENSOR_MS
+        lightUsable = !dead
+        val noLight = light == null || dead
+        controller.lightFailed = dead
+        controller.cameraFallback = noLight && cameraEnabled
         val seen = cameraLux?.takeIf { front.running && now - cameraReadAt < 3000 }
-        if (light == null && seen != null) controller.onLux(seen)
+        if (noLight && seen != null) controller.onLux(seen)
         val lux = controller.lux()
         val scene = analyzer.classify(lux, controller.isCovered, hour())
-        val blocked = light != null && analyzer.blocked(lux, seen)
+        val blocked = !noLight && analyzer.blocked(lux, seen)
         val stuck = analyzer.stuckAtZero(lux, controller.isMoving(now), now)
         controller.inhibit = when {
             blocked -> Reason.BLOCKED
@@ -293,6 +328,7 @@ class AutoSensorHost(
             else -> null
         }
         val hint = when {
+            dead && !cameraEnabled -> R.string.hint_sensor_dead
             blocked -> R.string.hint_blocked
             stuck -> R.string.hint_stuck
             else -> null
@@ -311,16 +347,68 @@ class AutoSensorHost(
         publishNow()
     }
 
-    fun calibrate(bright: Boolean): CalibrationOutcome {
-        if (!sampling) return CalibrationOutcome(CalibrationStatus.NOT_RUNNING)
-        val lux = controller.lux() ?: return CalibrationOutcome(CalibrationStatus.NO_READING)
-        val result = controller.calibrate(bright) ?: return CalibrationOutcome(CalibrationStatus.TOO_DIM)
+    fun calibrateNow(bright: Boolean, done: (CalibrationOutcome) -> Unit) {
+        cancelCalibration()
+        controller.learned = loadLearned()
+        if (controller.isCovered) return done(CalibrationOutcome(CalibrationStatus.COVERED))
+        val sensor = light?.takeIf { lightUsable }
+        val camera = sensor == null && cameraEnabled && hasCameraPermission(context)
+        if (sensor == null && !camera) return done(CalibrationOutcome(CalibrationStatus.NO_SOURCE))
+        val samples = ArrayList<Float>()
+        calibrationSink = { samples.add(it) }
+        if (sensor != null) {
+            val sampler = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    if (event != null) calibrationSink?.invoke(maxOf(0f, event.values[0]))
+                }
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+            }
+            calibrationListener = sampler
+            try {
+                sensors.registerListener(sampler, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            } catch (_: SecurityException) {
+                cancelCalibration()
+                return done(CalibrationOutcome(CalibrationStatus.NO_SOURCE))
+            }
+        } else if (!front.running) {
+            front.start()
+        }
+        val finish = Runnable {
+            val result = measure(samples, bright, camera)
+            cancelCalibration()
+            done(result)
+        }
+        calibrationEnd = finish
+        handler.postDelayed(finish, if (camera) CAMERA_CALIBRATION_MS else SENSOR_CALIBRATION_MS)
+    }
+
+    private fun cancelCalibration() {
+        calibrationEnd?.let { handler.removeCallbacks(it) }
+        calibrationEnd = null
+        calibrationListener?.let { sensors.unregisterListener(it) }
+        calibrationListener = null
+        if (calibrationSink != null) {
+            calibrationSink = null
+            updateCamera()
+        }
+    }
+
+    private fun measure(samples: List<Float>, bright: Boolean, camera: Boolean): CalibrationOutcome {
+        if (samples.size < (if (camera) 2 else 1)) return CalibrationOutcome(CalibrationStatus.NO_READING)
+        if (controller.isCovered) return CalibrationOutcome(CalibrationStatus.COVERED)
+        val sorted = samples.sorted()
+        if (sorted.size >= 3 && ln(sorted.last() + 1.0) - ln(sorted.first() + 1.0) > ln(4.0)) {
+            return CalibrationOutcome(CalibrationStatus.UNSTABLE)
+        }
+        val median = sorted[sorted.size / 2]
+        val result = controller.calibrateAt(controller.adjust(median), bright)
+            ?: return CalibrationOutcome(CalibrationStatus.TOO_DIM)
         prefs.edit().putFloat(KEY_DARK, result.darkLux).putFloat(KEY_BRIGHT, result.brightLux).apply()
-        return CalibrationOutcome(CalibrationStatus.SAVED, lux)
+        return CalibrationOutcome(CalibrationStatus.SAVED, median)
     }
 
     private fun update() {
-        val shouldSample = enabled && active && screenOn
+        val shouldSample = enabled && active && (screenOn || bgMode)
         if (shouldSample != sampling) {
             sampling = shouldSample
             if (shouldSample) startSensors() else stopSensors()
@@ -352,8 +440,12 @@ class AutoSensorHost(
     private fun setLightRegistered(value: Boolean) {
         val sensor = light ?: return
         if (value == lightRegistered) return
-        if (value) sensors.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
-        else sensors.unregisterListener(this, sensor)
+        if (value) {
+            sensors.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
+            lightRegisteredAt = now()
+        } else {
+            sensors.unregisterListener(this, sensor)
+        }
         lightRegistered = value
     }
 
@@ -379,7 +471,11 @@ class AutoSensorHost(
         if (!sampling || event == null) return
         val values = event.values
         when (event.sensor.type) {
-            Sensor.TYPE_LIGHT -> controller.onLux(values[0])
+            Sensor.TYPE_LIGHT -> {
+                lightEventAt = now()
+                lightUsable = true
+                controller.onLux(values[0])
+            }
             Sensor.TYPE_PROXIMITY ->
                 controller.onProximity(values[0] < minOf(event.sensor.maximumRange, 5f), now())
             Sensor.TYPE_ACCELEROMETER ->
@@ -401,6 +497,9 @@ class AutoSensorHost(
     private fun now() = SystemClock.elapsedRealtime()
 
     private companion object {
+        const val DEAD_SENSOR_MS = 6000L
+        const val SENSOR_CALIBRATION_MS = 2500L
+        const val CAMERA_CALIBRATION_MS = 4000L
         const val KEY_CAMERA = "camera_sensing"
         const val KEY_LOG = "override_log"
         const val KEY_PRESET = "auto_preset"

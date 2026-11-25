@@ -70,7 +70,7 @@
     <string name="preset_eco">اقتصادي</string>
     <string name="preset_balanced">متوازن</string>
     <string name="preset_max">أقصى</string>
-    <string name="calibration_title">المعايرة (في الوضع التلقائي)</string>
+    <string name="calibration_title">المعايرة</string>
     <string name="calibrate_dark">معايرة الظلام</string>
     <string name="calibrate_bright">معايرة الإضاءة العالية</string>
     <string name="camera_sensing">استشعار الضوء بالكاميرا (اختياري)</string>
@@ -78,6 +78,18 @@
     <string name="camera_privacy">تُقاس إطارات الكاميرا في ذاكرة هاتفك ولا تُحفظ ولا تُرسل إلى أي جهة.</string>
     <string name="reset_learning">إعادة ضبط التعلّم والمعايرة</string>
     <string name="screen_fallback">استخدام الشاشة كضوء عند عدم وجود فلاش</string>
+    <string name="status_icon">أيقونة شريط الحالة</string>
+    <string name="status_icon_note">تُظهر أيقونة صغيرة بأزرار سريعة في شريط الحالة وشاشة القفل.</string>
+    <string name="bg_auto">التلقائي في الخلفية</string>
+    <string name="bg_auto_note">يُبقي الوضع التلقائي يعمل والشاشة مطفأة أو مقفلة. يستهلك بطارية أكثر قليلاً.</string>
+    <string name="notif_channel_name">أيقونة شريط الحالة</string>
+    <string name="notif_ready">جاهز</string>
+    <string name="notif_light_on">الضوء يعمل</string>
+    <string name="notif_auto_on">الوضع التلقائي يراقب الإضاءة</string>
+    <string name="notif_action_light">الضوء</string>
+    <string name="notif_action_auto_on">تلقائي</string>
+    <string name="notif_action_auto_off">إيقاف التلقائي</string>
+    <string name="notif_action_close">إغلاق</string>
     <string name="language_title">اللغة</string>
     <string name="language_system">النظام</string>
     <string name="language_english">English</string>
@@ -91,9 +103,16 @@
 
     <string name="toast_calibrated_dark">تم حفظ مستوى الظلام: %1$d لوكس.</string>
     <string name="toast_calibrated_bright">تم حفظ مستوى الإضاءة العالية: %1$d لوكس.</string>
-    <string name="toast_calibration_not_running">انتقل إلى الوضع التلقائي أولاً ثم عاير.</string>
-    <string name="toast_calibration_no_reading">لا توجد قراءة إضاءة بعد. انتظر بضع ثوانٍ في الوضع التلقائي وحاول مجدداً.</string>
+    <string name="toast_calibration_no_reading">لم تصل قراءة إضاءة. حاول مجدداً بعد ثوانٍ.</string>
     <string name="toast_calibration_too_dim">المكان خافت جداً لمعايرة الإضاءة العالية. عاير في مكان أكثر إضاءة (30 لوكس على الأقل).</string>
+    <string name="toast_calibration_measuring">جارٍ القياس… أبقِ الهاتف ثابتاً.</string>
+    <string name="toast_calibration_no_source">لا يوجد مصدر إضاءة للمعايرة. فعّل استشعار الإضاءة بالكاميرا من الإعدادات.</string>
+    <string name="toast_calibration_covered">أعلى الهاتف مغطى. اكشفه وحاول مجدداً.</string>
+    <string name="toast_calibration_unstable">تغيّرت الإضاءة أثناء القياس. أبقِ الهاتف ثابتاً وحاول مجدداً.</string>
+    <string name="toast_no_sensors_at_all">لا يحتوي هذا الجهاز على حساس إضاءة ولا كاميرا أمامية، لذلك الوضع التلقائي غير متاح. الوضع اليدوي يعمل.</string>
+    <string name="toast_auto_using_camera">لم يُعثر على حساس إضاءة. سيستخدم الوضع التلقائي الكاميرا الأمامية.</string>
+    <string name="toast_bg_auto_needs_sensor">الوضع التلقائي في الخلفية يحتاج حساس إضاءة غير متوفر في هذا الجهاز.</string>
+    <string name="toast_notifications_denied">الإشعارات محظورة فلن تظهر الأيقونة في شريط الحالة. اسمح بها من إعدادات النظام.</string>
     <string name="toast_camera_on">استشعار الكاميرا قيد التشغيل.</string>
     <string name="toast_camera_denied">الكاميرا غير مسموح بها. سيتم استخدام حساس الضوء فقط.</string>
     <string name="toast_learning_cleared">تم مسح التعلّم والمعايرة.</string>
@@ -128,6 +147,7 @@
     <string name="flicker_60">وميض (تيار 60 هرتز)</string>
 
     <string name="hint_blocked">يبدو أن شيئًا يغطي حساس الضوء.</string>
+    <string name="hint_sensor_dead">حساس الإضاءة لا يستجيب. فعّل استشعار الإضاءة بالكاميرا من الإعدادات.</string>
     <string name="hint_stuck">تبقى القراءة صفرًا أثناء الحركة. إن لم يكن الظلام دامسًا فتحقق من أعلى الشاشة.</string>
 
     <string name="result_off">إطفاء</string>

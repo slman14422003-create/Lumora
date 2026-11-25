@@ -79,7 +79,7 @@
     <string name="preset_eco">Eco</string>
     <string name="preset_balanced">Balanced</string>
     <string name="preset_max">Max</string>
-    <string name="calibration_title">Calibration (in Auto mode)</string>
+    <string name="calibration_title">Calibration</string>
     <string name="calibrate_dark">Calibrate dark</string>
     <string name="calibrate_bright">Calibrate bright</string>
     <string name="camera_sensing">Camera light sensing (optional)</string>
@@ -87,6 +87,18 @@
     <string name="camera_privacy">Camera frames are measured in memory on your phone and are never saved or sent anywhere.</string>
     <string name="reset_learning">Reset learning and calibration</string>
     <string name="screen_fallback">Use the screen as a light when there is no flash</string>
+    <string name="status_icon">Status bar icon</string>
+    <string name="status_icon_note">Shows a small icon with quick controls in the status bar and lock screen.</string>
+    <string name="bg_auto">Auto in the background</string>
+    <string name="bg_auto_note">Keeps Auto running with the screen off or locked. Uses a little more battery.</string>
+    <string name="notif_channel_name">Status bar icon</string>
+    <string name="notif_ready">Ready</string>
+    <string name="notif_light_on">Light on</string>
+    <string name="notif_auto_on">Auto is watching the light</string>
+    <string name="notif_action_light">Light</string>
+    <string name="notif_action_auto_on">Auto</string>
+    <string name="notif_action_auto_off">Stop Auto</string>
+    <string name="notif_action_close">Close</string>
     <string name="language_title">Language</string>
     <string name="language_system">System</string>
     <string name="language_english">English</string>
@@ -103,9 +115,16 @@
     <!-- Messages -->
     <string name="toast_calibrated_dark">Dark level saved: %1$d lux.</string>
     <string name="toast_calibrated_bright">Bright level saved: %1$d lux.</string>
-    <string name="toast_calibration_not_running">Switch to Auto mode first, then calibrate.</string>
-    <string name="toast_calibration_no_reading">No light reading yet. Wait a few seconds in Auto mode and try again.</string>
+    <string name="toast_calibration_no_reading">No light reading received. Try again in a few seconds.</string>
     <string name="toast_calibration_too_dim">Too dim for the bright level. Calibrate it in a brighter place (at least 30 lux).</string>
+    <string name="toast_calibration_measuring">Measuring… hold the phone steady.</string>
+    <string name="toast_calibration_no_source">No light source to calibrate with. Turn on camera light sensing in Settings.</string>
+    <string name="toast_calibration_covered">The top of the phone is covered. Uncover it and try again.</string>
+    <string name="toast_calibration_unstable">The light changed while measuring. Hold the phone steady and try again.</string>
+    <string name="toast_no_sensors_at_all">This device has no light sensor and no front camera, so Auto is unavailable. Manual mode still works.</string>
+    <string name="toast_auto_using_camera">No light sensor found. Auto will use the front camera.</string>
+    <string name="toast_bg_auto_needs_sensor">Background Auto needs a light sensor, which this device does not report.</string>
+    <string name="toast_notifications_denied">Notifications are blocked, so the status bar icon will not show. Allow them in system settings.</string>
     <string name="toast_camera_on">Camera sensing is on.</string>
     <string name="toast_camera_denied">Camera not allowed. Using the light sensor only.</string>
     <string name="toast_learning_cleared">Learning and calibration cleared.</string>
@@ -141,6 +160,7 @@
     <string name="flicker_60">flickering (60 Hz mains)</string>
 
     <string name="hint_blocked">Something seems to be covering the light sensor.</string>
+    <string name="hint_sensor_dead">The light sensor is not responding. Turn on camera light sensing in Settings.</string>
     <string name="hint_stuck">Reading stays at 0 while moving. If it isn\'t pitch dark, check the top of the screen.</string>
 
     <!-- Auto reasons -->

@@ -68,6 +68,7 @@ class AutoLightController(private val sources: Sources) {
     var inhibit: Reason? = null
     var flickering = false
     var cameraFallback = false
+    var lightFailed = false
     var closeCap = 10
 
     private enum class Change { TURN_ON, TURN_OFF, UP, DOWN }
@@ -196,11 +197,14 @@ class AutoLightController(private val sources: Sources) {
         wake(now)
     }
 
-    fun calibrate(bright: Boolean): Calibration? {
-        val lux = currentLux() ?: return null
+    fun adjust(lux: Float): Float =
+        (lux / (sensitivity.factor * exp(learned.shift.toDouble()))).toFloat()
+
+    fun calibrate(bright: Boolean): Calibration? = currentLux()?.let { calibrateAt(it, bright) }
+
+    fun calibrateAt(lux: Float, bright: Boolean): Calibration? {
+        if (lux.isNaN() || lux.isInfinite() || lux < 0f) return null
         val current = calibration
-        // Moving one end keeps the other end valid, so a calibration can't fail just
-        // because the other level was set under different conditions.
         val next = if (bright) {
             val dark = minOf(current.darkLux, lux / 3.2f, lux - 31f).coerceAtLeast(0f)
             Calibration(dark, lux)
@@ -337,7 +341,7 @@ class AutoLightController(private val sources: Sources) {
         val strength = if (on) minOf(level, cap, closeCap) else 0
         val lux = effectiveLux()
         val reason = when {
-            !sources.light && !cameraFallback -> Reason.NO_LIGHT_SENSOR
+            (!sources.light || lightFailed) && !cameraFallback -> Reason.NO_LIGHT_SENSOR
             on && cap < level -> Reason.THERMAL
             now < overrideUntil -> Reason.USER_OVERRIDE
             faceDown && now - faceDownSince >= FACE_DOWN_MS -> Reason.FACE_DOWN
